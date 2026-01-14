@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Boxing Pro">
+    <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/evenrom/boxing-timer-assets/refs/heads/main/icon.png">
+
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#0b0b0b">
+    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/evenrom/boxing-timer-assets/refs/heads/main/icon.png">
+
+    <title>Boxing Pro Trainer</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700&family=Teko:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,700,0,0" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg: #0b0b0b;
+            --work-color: #0099ff;
+            --rest-color: #00ff99;
+            --muted: #666;
+            --white: #ffffff;
+            --active-bg: rgba(0, 153, 255, 0.15);
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; select: none; user-select: none; touch-action: manipulation; }
+
+        body {
+            margin: 0; height: 100vh; height: 100dvh; background: var(--bg);
+            display: flex; justify-content: center; align-items: center;
+            font-family: 'Assistant', sans-serif; color: var(--white); overflow: hidden;
+        }
+
+        .container {
+            width: 96%; height: 94vh; height: 94dvh; max-width: 1200px;
+            background: linear-gradient(180deg, #181818, #0e0e0e);
+            border-radius: 24px; padding: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8); border: 1px solid #222;
+            display: flex; flex-direction: column; position: relative;
+        }
+
+        /* --- UI STYLES (זהה לקוד הקודם) --- */
+        #setup-screen { display: flex; flex-direction: column; height: 100%; width: 100%; }
+        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; flex: 1; align-items: center; overflow-y: auto; padding-bottom: 20px; }
+        .setup-left { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; border-right: 1px solid #333; }
+        .setup-right { display: flex; flex-direction: column; justify-content: center; gap: 15px; height: 100%; padding: 0 20px; }
+        .diff-btn { background: transparent; border: 2px solid #333; border-radius: 16px; padding: 20px; cursor: pointer; text-align: left; transition: all 0.2s ease; }
+        .diff-btn.active { background: var(--active-bg); border-color: var(--work-color); box-shadow: 0 0 15px rgba(0, 153, 255, 0.2); }
+        .diff-title { font-family: 'Teko', sans-serif; font-size: 2.2rem; font-weight: 700; margin: 0; line-height: 1; color: #777; }
+        .diff-btn.active .diff-title { color: var(--work-color); }
+        .diff-details { font-family: 'Assistant', sans-serif; font-size: 0.9rem; color: #555; margin-top: 5px; font-weight: 700; }
+        .diff-btn.active .diff-details { color: #fff; }
+        .rounds-wrapper { text-align: center; }
+        .rounds-title { font-family: 'Teko', sans-serif; font-size: 4rem; color: var(--work-color); line-height: 1; margin-bottom: 20px; }
+        .counter-controls { display: flex; align-items: center; gap: 20px; justify-content: center; }
+        .c-btn { width: 70px; height: 70px; border-radius: 50%; background: #222; border: 2px solid #444; color: white; font-size: 35px; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+        .c-btn:active { background: var(--work-color); border-color: var(--work-color); color: black; }
+        #setupRoundCount { font-family: 'Teko', sans-serif; font-size: 80px; min-width: 90px; }
+        .info-label { font-family: 'Teko', sans-serif; font-size: 1.5rem; color: #666; margin-top: 20px; text-transform: uppercase; letter-spacing: 1px; }
+        .start-container { width: 100%; display: flex; justify-content: center; padding: 10px 0; z-index: 100; }
+        .btn-start { background: transparent; color: var(--work-color); border: 3px solid var(--work-color); padding: 15px 80px; border-radius: 999px; font-family: 'Teko', sans-serif; font-weight: 700; font-size: 2.5rem; cursor: pointer; box-shadow: 0 0 15px rgba(0,153,255,0.1); text-transform: uppercase; }
+        .btn-start:active { transform: scale(0.96); background: var(--work-color); color: #000; }
+
+        /* Timer Screen */
+        #timer-screen { display: none; height: 100%; width: 100%; flex-direction: column; }
+        .timer-left { text-align: left; display: flex; flex-direction: column; justify-content: center; height: 100%; }
+        .timer-right { text-align: left; border-left: 1px solid #333; padding-left: 40px; display: flex; flex-direction: column; justify-content: center; height: 100%; }
+        .main-clock { font-family: 'Teko', sans-serif; font-size: 160px; line-height: 0.85; color: var(--work-color); text-shadow: 0 0 40px rgba(0,153,255,0.3); }
+        .sub-clock { font-family: 'Teko', sans-serif; font-size: 50px; color: white; }
+        .pattern-box { background: #1a1a1a; border-radius: 20px; padding: 25px; border-left: 6px solid var(--work-color); margin-bottom: 25px; }
+        .pattern-label { color: var(--muted); font-size: 0.9rem; letter-spacing: 1px; margin-bottom: 5px; text-transform: uppercase;}
+        #currentPattern { font-family: 'Teko', sans-serif; font-size: 55px; color: white; line-height: 1.1; display: flex; align-items: center; gap: 10px; }
+        #nextPattern { font-family: 'Teko', sans-serif; font-size: 32px; color: #666; display: flex; align-items: center; gap: 5px;}
+        .timer-controls { display: flex; justify-content: center; gap: 20px; padding: 10px 0; z-index: 100; }
+        .btn-control { border-radius: 999px; padding: 12px 40px; font-family: 'Teko'; font-size: 1.8rem; font-weight: 700; cursor: pointer; border: none; min-width: 160px; }
+        .btn-pause { background: transparent; border: 2px solid var(--work-color); color: var(--work-color); }
+        .btn-stop { background: transparent; border: 2px solid #ff4444; color: #ff4444; }
+
+        /* Finish Screen */
+        #finish-screen { display: none; height: 100%; width: 100%; text-align: center; flex-direction: column; justify-content: center; align-items: center; }
+        .finish-title { font-family: 'Teko'; font-size: 7rem; color: var(--rest-color); line-height: 1; margin: 0; }
+        .finish-level { font-family: 'Teko'; font-size: 3rem; color: #fff; margin-bottom: 30px; text-transform: uppercase; }
+        .finish-stat { background: #222; padding: 15px 40px; border-radius: 15px; border: 1px solid #444; display: inline-block; margin-bottom: 40px;}
+        .material-symbols-outlined { font-size: 1.25em !important; vertical-align: middle; }
+
+        /* Responsive */
+        @media (max-width: 900px) and (orientation: portrait) {
+            .container { padding: 15px; height: 98dvh; width: 98%; }
+            .dashboard-grid { grid-template-columns: 1fr; gap: 10px; overflow-y: scroll; display: block;}
+            .setup-right { padding: 10px 0; margin-bottom: 20px; border-bottom: 1px solid #333; display: block; height: auto; }
+            .setup-left { border-right: none; height: auto; padding: 20px 0; }
+            .rounds-title { font-size: 3rem; }
+            .diff-btn { margin-bottom: 10px; padding: 15px; }
+            .timer-left { height: auto; text-align: center; border-bottom: 1px solid #333; padding-bottom: 15px; margin-bottom: 15px; }
+            .timer-right { border-left: none; padding-left: 0; height: auto; text-align: center; }
+            .main-clock { font-size: 110px; }
+            #currentPattern { justify-content: center; font-size: 40px; }
+            .btn-start { padding: 12px 50px; font-size: 2rem; }
+        }
+        @media (max-width: 900px) and (orientation: landscape) {
+            .container { height: 98dvh; padding: 10px 20px; max-width: 100%; }
+            .dashboard-grid { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 20px; overflow-y: hidden !important; padding-bottom: 0; align-items: center; height: 100%; }
+            .timer-left { border-bottom: none !important; border-right: 1px solid #333; padding-bottom: 0 !important; margin-bottom: 0 !important; height: 100%; justify-content: center; text-align: left; }
+            .timer-right { border-left: none; padding-left: 10px !important; height: 100%; text-align: left !important; justify-content: center; }
+            .main-clock { font-size: 90px !important; line-height: 0.9; }
+            .sub-clock { font-size: 30px !important; }
+            #currentPattern { font-size: 45px !important; justify-content: flex-start !important; }
+            .setup-right { padding: 0 !important; gap: 5px; height: 100%; justify-content: center; border-bottom: none;}
+            .setup-left { border-right: 1px solid #333; height: 100%; padding: 0;}
+            .diff-btn { padding: 10px !important; margin-bottom: 5px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="setup-screen">
+        <div class="dashboard-grid">
+            <div class="setup-right">
+                <div class="diff-btn active" id="btn-rookie"><div class="diff-title">ROOKIE</div><div class="diff-details">3 MIN ROUND • 20 SEC REST</div></div>
+                <div class="diff-btn" id="btn-pro"><div class="diff-title">PRO</div><div class="diff-details">5 MIN ROUND • 30 SEC REST</div></div>
+                <div class="diff-btn" id="btn-champ"><div class="diff-title">CHAMP</div><div class="diff-details">10 MIN ROUND • 60 SEC REST</div></div>
+            </div>
+            <div class="setup-left">
+                <div class="rounds-wrapper">
+                    <div class="rounds-title">ROUNDS</div>
+                    <div class="counter-controls"><div class="c-btn" id="btn-minus">−</div><span id="setupRoundCount">8</span><div class="c-btn" id="btn-plus">+</div></div>
+                    <div class="info-label">TOTAL SESSION TIME</div><div id="totalTimePreview" style="font-family:'Teko'; font-size:2.5rem; color:#fff;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="start-container"><button class="btn-start" id="btn-start-fight">START FIGHT</button></div>
+    </div>
+
+    <div id="timer-screen">
+        <div class="dashboard-grid" style="overflow: hidden; padding-bottom: 0;">
+            <div class="timer-left">
+                <div id="mainTimer" class="main-clock">00:00</div>
+                <div class="info-label">TOTAL SESSION TIME</div>
+                <div id="totalTimer" class="sub-clock">00:00</div>
+            </div>
+            <div class="timer-right">
+                <div id="statusText" class="rounds-title" style="font-size: 4rem; margin-bottom: 10px;">ROUND 1</div>
+                <div class="pattern-box"><div class="pattern-label">CURRENT COMBO</div><div id="currentPattern"></div></div>
+                <div style="padding-left: 10px;"><div class="pattern-label">NEXT UP</div><div id="nextPattern"></div></div>
+            </div>
+        </div>
+        <div class="timer-controls">
+            <button class="btn-control btn-pause" id="pauseBtn">PAUSE</button>
+            <button class="btn-control btn-stop" id="stopBtn">END</button>
+        </div>
+    </div>
+
+    <div id="finish-screen">
+        <h1 class="finish-title">VICTORY</h1>
+        <div class="finish-level" id="finishLevelText">PRO LEVEL COMPLETED</div>
+        <div class="finish-stat"><span style="color:#888; text-transform: uppercase; font-size: 0.9rem;">Rounds Completed</span><br><span id="finishRoundsVal" style="font-family:'Teko'; font-size: 3rem; color:var(--work-color);">8</span></div>
+        <button class="btn-start" id="btn-restart">NEW WORKOUT</button>
+    </div>
+</div>
+
+<script>
+    // ************************************************
+    // PASTE YOUR GOOGLE SCRIPT URL HERE INSIDE THE QUOTES
+    // ************************************************
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyhFe573lGoje_TsHLZyOv9f4uO0Ccdxiw2J_tJtV8tGgTkyUq6MCTNemI2LkyrOH7t/exec"; 
+    // ************************************************
+
+    function triggerHaptic() { if (navigator.vibrate) navigator.vibrate(40); }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        let bell = new Audio('https://github.com/evenrom/boxing-timer-assets/raw/refs/heads/main/bell.mp3');
+        let minute = new Audio('https://github.com/evenrom/boxing-timer-assets/raw/refs/heads/main/minute.mp3');
+        let countdown = new Audio('https://github.com/evenrom/boxing-timer-assets/raw/refs/heads/main/countdown.mp3');
+
+        const SETTINGS = {
+            'ROOKIE': { roundTime: 180, restTime: 20, defaultRounds: 8 },
+            'PRO':    { roundTime: 300, restTime: 30, defaultRounds: 6 },
+            'CHAMP':  { roundTime: 600, restTime: 60, defaultRounds: 3 }
+        };
+
+        let currentDifficulty = 'ROOKIE';
+        let targetRounds = 8;
+        let phase = 'setup'; 
+        let timerInterval = null;
+        let wakeLock = null;
+        let isPaused = false;
+        let currentRound = 0;
+        let phaseTimeLeft = 0; 
+        let totalSessionLeft = 0; 
+        let totalWorkSeconds = 0; 
+
+        const patternsSource = {
+            1:["1","1-2","1-2-3"], 2:["1 ▲ 1","1-2-7-2","2-4"], 3:["1-1-2","1-4 ► 2","1-2-3"],
+            4:["1-2-7-3","1 ◄ 1-2","1-3-7-3"], 5:["2-4 ◄ 4","1-2-7-2","1-2 ▲ 3"],
+            6:["1-2-7-4-2","2 ▲ 4-4","1 ▲ 3-3"], 7:["1-3-7-4","2-4-7-3","1 ► 2-2"],
+            8:["1-2-1-2-1-2","3-4-3-4-3-4","5-6-5-6-5-6"], 9:["1 ► 2-4","1-7-3","2-7-4"],
+            10:["1 ▲ 1-2-7-2","2-4-7-2-4","1-2-3-7-2"]
+        };
+
+        function attachBtnEvent(id, func) {
+            const btn = document.getElementById(id);
+            if(btn) btn.addEventListener('click', (e) => { triggerHaptic(); func(e); });
+        }
+
+        attachBtnEvent('btn-rookie', () => selectDifficulty('ROOKIE'));
+        attachBtnEvent('btn-pro', () => selectDifficulty('PRO'));
+        attachBtnEvent('btn-champ', () => selectDifficulty('CHAMP'));
+        attachBtnEvent('btn-minus', () => adjustRounds(-1));
+        attachBtnEvent('btn-plus', () => adjustRounds(1));
+        attachBtnEvent('btn-start-fight', startWorkout);
+        attachBtnEvent('pauseBtn', togglePause);
+        attachBtnEvent('stopBtn', resetApp);
+        attachBtnEvent('btn-restart', resetApp);
+
+        function selectDifficulty(level) {
+            currentDifficulty = level;
+            const config = SETTINGS[level];
+            document.querySelectorAll('.diff-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`btn-${level.toLowerCase()}`).classList.add('active');
+            targetRounds = config.defaultRounds;
+            updateSetupUI();
+        }
+
+        function adjustRounds(delta) {
+            targetRounds = Math.max(1, targetRounds + delta);
+            updateSetupUI();
+        }
+
+        function calculateTotalTime() {
+            const cfg = SETTINGS[currentDifficulty];
+            return 60 + (targetRounds * cfg.roundTime) + ((targetRounds - 1) * cfg.restTime);
+        }
+
+        function updateSetupUI() {
+            document.getElementById('setupRoundCount').innerText = targetRounds;
+            document.getElementById('totalTimePreview').innerText = formatTime(calculateTotalTime());
+        }
+
+        async function requestWakeLock(){ if('wakeLock' in navigator){ try{ wakeLock = await navigator.wakeLock.request('screen'); }catch(e){} } }
+
+        function startWorkout() {
+            phase = 'warmup'; currentRound = 0; phaseTimeLeft = 60; 
+            totalSessionLeft = calculateTotalTime(); totalWorkSeconds = 0; isPaused = false;
+            document.getElementById('setup-screen').style.display = 'none';
+            document.getElementById('timer-screen').style.display = 'flex'; 
+            document.getElementById('finish-screen').style.display = 'none';
+            requestWakeLock();
+            bell.play().catch(e=>{});
+            if(timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(tick, 1000);
+            updateTimerUI();
+        }
+
+        function tick() {
+            if(isPaused) return;
+            phaseTimeLeft--; totalSessionLeft--;
+            if(phase === 'work') {
+                totalWorkSeconds++;
+                if(phaseTimeLeft > 0 && phaseTimeLeft % 60 === 0) minute.play().catch(e=>{});
+            }
+            if(phaseTimeLeft === 10) countdown.play().catch(e=>{});
+            if(phaseTimeLeft <= 0) handlePhaseChange();
+            updateTimerUI();
+        }
+
+        function handlePhaseChange() {
+            bell.play().catch(e=>{});
+            const cfg = SETTINGS[currentDifficulty];
+            if(phase === 'warmup') {
+                phase = 'work'; currentRound = 1; phaseTimeLeft = cfg.roundTime;
+            } else if (phase === 'work') {
+                if(currentRound >= targetRounds) { finishWorkout(); return; }
+                phase = 'rest'; phaseTimeLeft = cfg.restTime;
+            } else if (phase === 'rest') {
+                phase = 'work'; currentRound++; phaseTimeLeft = cfg.roundTime;
+            }
+        }
+
+        function getPatternByWorkTime(workSeconds) {
+            const globalMinuteIndex = Math.floor(workSeconds / 60);
+            const sourceRound = Math.floor((globalMinuteIndex % 30) / 3) + 1;
+            return patternsSource[sourceRound]?.[(globalMinuteIndex % 30) % 3] || "FREESTYLE";
+        }
+
+        function parseIcons(text) {
+            if(!text) return '-';
+            return text.replace(/▲/g,'<span class="material-symbols-outlined">keyboard_double_arrow_up</span>')
+                       .replace(/▼/g,'<span class="material-symbols-outlined">keyboard_double_arrow_down</span>')
+                       .replace(/◄/g,'<span class="material-symbols-outlined">keyboard_double_arrow_left</span>')
+                       .replace(/►/g,'<span class="material-symbols-outlined">keyboard_double_arrow_right</span>');
+        }
+
+        function updateTimerUI() {
+            const mainClock = document.getElementById('mainTimer');
+            const statusText = document.getElementById('statusText');
+            const root = document.documentElement;
+            mainClock.innerText = formatTime(phaseTimeLeft);
+            document.getElementById('totalTimer').innerText = formatTime(totalSessionLeft);
+
+            if(phase === 'work') {
+                root.style.setProperty('--work-color', '#0099ff'); 
+                statusText.style.color = 'var(--work-color)'; statusText.innerText = `ROUND ${currentRound}`;
+                const currentPat = getPatternByWorkTime(totalWorkSeconds);
+                const nextPat = getPatternByWorkTime(totalWorkSeconds + 60);
+                document.getElementById('currentPattern').innerHTML = parseIcons(currentPat);
+                document.getElementById('nextPattern').innerHTML = parseIcons(nextPat);
+            } else {
+                root.style.setProperty('--work-color', '#00ff99'); 
+                statusText.style.color = 'var(--rest-color)';
+                statusText.innerText = phase === 'warmup' ? "WARM UP" : "REST";
+                document.getElementById('currentPattern').innerText = phase === 'warmup' ? "GET READY" : "BREATHE";
+                document.getElementById('nextPattern').innerText = `ROUND ${currentRound + 1} COMING UP`;
+            }
+        }
+
+        function finishWorkout() {
+            clearInterval(timerInterval);
+            if(wakeLock) wakeLock.release();
+            
+            // --- SEND DATA TO GOOGLE SCRIPT ---
+            const finalUrl = `${GOOGLE_SCRIPT_URL}?rounds=${targetRounds}&difficulty=${currentDifficulty}`;
+            fetch(finalUrl, { mode: 'no-cors' }).then(() => console.log('Saved to Sheet'));
+
+            document.getElementById('timer-screen').style.display = 'none';
+            document.getElementById('finish-screen').style.display = 'flex';
+            document.getElementById('finishLevelText').innerText = `${currentDifficulty} LEVEL COMPLETED`;
+            document.getElementById('finishRoundsVal').innerText = targetRounds;
+        }
+
+        function togglePause() {
+            isPaused = !isPaused;
+            document.getElementById('pauseBtn').innerText = isPaused ? "RESUME" : "PAUSE";
+        }
+
+        function resetApp() {
+            clearInterval(timerInterval);
+            if(wakeLock) wakeLock.release();
+            phase = 'setup'; selectDifficulty(currentDifficulty); 
+            document.getElementById('finish-screen').style.display = 'none';
+            document.getElementById('timer-screen').style.display = 'none';
+            document.getElementById('setup-screen').style.display = 'flex';
+        }
+
+        function formatTime(s) {
+            if(s < 0) s=0;
+            return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+        }
+
+        selectDifficulty('ROOKIE'); 
+    });
+</script>
+</body>
+</html>
