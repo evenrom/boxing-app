@@ -58,11 +58,22 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById(`btn-${level.toLowerCase()}`).classList.add('active');
         targetRounds = config.defaultRounds;
         updateSetupUI();
+        saveSettings();
     }
 
     function adjustRounds(delta) {
         targetRounds = Math.max(1, targetRounds + delta);
         updateSetupUI();
+        saveSettings();
+    }
+
+    function saveSettings() {
+        try {
+            localStorage.setItem('boxingDifficulty', currentDifficulty);
+            localStorage.setItem('boxingRounds', targetRounds);
+        } catch (e) {
+            // Ignore localStorage errors (e.g. private mode)
+        }
     }
 
     function calculateTotalTime() {
@@ -174,7 +185,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function resetApp() {
         clearInterval(timerInterval);
         if(wakeLock) wakeLock.release();
-        phase = 'setup'; selectDifficulty(currentDifficulty);
+        phase = 'setup'; updateSetupUI();
         document.getElementById('finish-screen').style.display = 'none';
         document.getElementById('timer-screen').style.display = 'none';
         document.getElementById('setup-screen').style.display = 'flex';
@@ -185,5 +196,26 @@ document.addEventListener('DOMContentLoaded', function() {
         return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
     }
 
-    selectDifficulty('ROOKIE');
+    // Initialize with saved settings or defaults
+    try {
+        const savedDiff = localStorage.getItem('boxingDifficulty');
+        const savedRounds = localStorage.getItem('boxingRounds');
+
+        if (savedDiff && SETTINGS[savedDiff]) {
+            selectDifficulty(savedDiff);
+        } else {
+            selectDifficulty('ROOKIE');
+        }
+
+        if (savedRounds) {
+            const r = parseInt(savedRounds);
+            if (!isNaN(r) && r > 0) {
+                targetRounds = r;
+                updateSetupUI();
+                saveSettings();
+            }
+        }
+    } catch (e) {
+        selectDifficulty('ROOKIE');
+    }
 });
