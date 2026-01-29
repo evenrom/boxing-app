@@ -6,82 +6,122 @@
     --text: #ffffff;
 }
 
-body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Assistant', sans-serif; overflow: hidden; }
+body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Assistant', sans-serif; height: 100vh; height: 100dvh; overflow: hidden; }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
-
-/* --- FORCED LANDSCAPE HACK --- */
-.rotate-wrapper {
-    width: 100vw; height: 100vh; position: relative; overflow: hidden;
-}
-
-/* במצב פורטרט: סובב את כל האפליקציה ב-90 מעלות */
-@media (orientation: portrait) {
-    .container {
-        position: absolute;
-        top: 50%; left: 50%;
-        width: 100vh; height: 100vw; /* החלפת מימדים */
-        transform: translate(-50%, -50%) rotate(90deg);
-    }
-}
-@media (orientation: landscape) {
-    .container { width: 100%; height: 100%; }
-}
 
 .container {
     background: linear-gradient(180deg, #181818, #0e0e0e);
     display: flex; flex-direction: column; padding: 10px 20px;
+    height: 100%; width: 100%; max-width: 1200px; margin: 0 auto;
 }
 
-/* --- LAYOUT --- */
-.app-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 5px; }
+/* --- HEADER --- */
+.app-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 5px; flex-shrink: 0; }
 .logo-text { font-family: 'Teko'; font-size: 1.5rem; letter-spacing: 2px; color: #444; }
-.icon-btn { background: none; border: none; color: #666; cursor: pointer; }
+.icon-btn { background: none; border: none; color: #666; cursor: pointer; padding: 5px; }
 
-/* Stats Bar */
-.stats-bar { display: flex; gap: 15px; margin-bottom: 10px; }
-.stat-card { background: #222; flex: 1; padding: 10px; border-radius: 12px; text-align: center; border: 1px solid #333; }
-.stat-val { font-family: 'Teko'; font-size: 1.8rem; line-height: 1; color: var(--work); }
-.stat-label { font-size: 0.7rem; color: #888; letter-spacing: 1px; }
+/* --- STATS BAR --- */
+.stats-bar { display: flex; gap: 10px; margin-bottom: 10px; flex-shrink: 0; }
+.stat-card { background: #222; flex: 1; padding: 5px 10px; border-radius: 8px; text-align: center; border: 1px solid #333; }
+.stat-val { font-family: 'Teko'; font-size: 1.5rem; line-height: 1; color: var(--work); }
+.stat-label { font-size: 0.6rem; color: #888; letter-spacing: 1px; }
 
-/* Dashboard Grid */
-.dashboard-grid { display: flex; flex: 1; gap: 20px; overflow: hidden; }
-.setup-col { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 8px; }
+/* --- DASHBOARD GRID (SETUP) --- */
+#setup-screen { display: flex; flex-direction: column; height: 100%; width: 100%; }
+.dashboard-grid { display: flex; flex: 1; gap: 20px; overflow: hidden; min-height: 0; }
+.setup-col { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 8px; overflow-y: auto; }
 .center-col { align-items: center; border-left: 1px solid #222; border-right: 1px solid #222; }
 
 /* Diff Buttons */
-.diff-btn { border: 1px solid #333; padding: 12px 15px; border-radius: 10px; cursor: pointer; transition: 0.2s; }
-.diff-btn.active { background: rgba(0, 153, 255, 0.1); border-color: var(--work); }
-.diff-title { font-family: 'Teko'; font-size: 1.8rem; line-height: 1; color: #888; }
+.diff-btn { border: 1px solid #333; padding: 15px; border-radius: 10px; cursor: pointer; transition: 0.2s; background: rgba(255,255,255,0.02); }
+.diff-btn.active { background: rgba(0, 153, 255, 0.15); border-color: var(--work); box-shadow: 0 0 10px rgba(0,153,255,0.1); }
+.diff-title { font-family: 'Teko'; font-size: 2rem; line-height: 1; color: #888; margin: 0; }
 .diff-btn.active .diff-title { color: var(--work); }
-.diff-details { font-size: 0.75rem; color: #555; }
+.diff-details { font-size: 0.8rem; color: #555; margin-top: 2px; }
+.diff-btn.active .diff-details { color: #fff; }
 
 /* Counter */
-.rounds-title { font-family: 'Teko'; font-size: 3rem; color: var(--work); }
-.counter-controls { display: flex; align-items: center; gap: 20px; }
-.c-btn { width: 60px; height: 60px; border-radius: 50%; background: #222; color: #fff; font-size: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-.c-btn:active { background: var(--work); color: black; }
-#setupRoundCount { font-family: 'Teko'; font-size: 5rem; width: 80px; text-align: center; }
+.rounds-title { font-family: 'Teko'; font-size: 3.5rem; color: var(--work); line-height: 1; margin-bottom: 10px; }
+.counter-controls { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
+.c-btn { width: 60px; height: 60px; border-radius: 50%; background: #222; color: #fff; font-size: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 1px solid #444; }
+.c-btn:active { background: var(--work); color: black; border-color: var(--work); }
+#setupRoundCount { font-family: 'Teko'; font-size: 6rem; width: 90px; text-align: center; line-height: 1; }
+.info-label { font-family: 'Teko'; color: #666; font-size: 1.2rem; }
 
-/* Timer Layout */
+/* Start Button */
+.start-container { padding: 10px 0; flex-shrink: 0; }
+.btn-start { background: transparent; border: 2px solid var(--work); color: var(--work); padding: 12px 0; width: 100%; font-family: 'Teko'; font-size: 2.2rem; border-radius: 50px; cursor: pointer; letter-spacing: 1px; }
+.btn-start:active { background: var(--work); color: black; transform: scale(0.98); }
+
+/* --- TIMER SCREEN --- */
 #timer-screen, #finish-screen { display: none; flex-direction: column; height: 100%; }
-.timer-grid { display: flex; flex: 1; align-items: center; }
+.timer-grid { display: flex; flex: 1; align-items: center; width: 100%; }
 .timer-left { flex: 1; text-align: center; display: flex; flex-direction: column; justify-content: center; }
-.timer-right { flex: 1; padding-left: 20px; border-left: 1px solid #333; }
+.timer-right { flex: 1; padding-left: 20px; border-left: 1px solid #333; height: 100%; display: flex; flex-direction: column; justify-content: center; }
 
-.main-clock { font-family: 'Teko'; font-size: 8rem; line-height: 0.9; color: var(--work); }
-.pattern-box { background: #1a1a1a; padding: 15px; border-left: 4px solid var(--work); margin-bottom: 15px; border-radius: 8px; }
-#currentPattern { font-family: 'Teko'; font-size: 2.5rem; color: white; display: flex; gap: 10px; }
-.material-symbols-outlined { vertical-align: middle; }
+.main-clock { font-family: 'Teko'; font-size: 10rem; line-height: 0.85; color: var(--work); }
+.sub-info { font-family: 'Teko'; font-size: 2rem; color: #888; }
 
-.btn-start { background: transparent; border: 2px solid var(--work); color: var(--work); padding: 10px 0; width: 100%; font-family: 'Teko'; font-size: 2rem; border-radius: 50px; margin-top: 10px; cursor: pointer; }
-.btn-start:active { background: var(--work); color: black; }
+.pattern-box { background: #1a1a1a; padding: 20px; border-left: 6px solid var(--work); margin-bottom: 20px; border-radius: 12px; width: 100%; }
+.pattern-label { font-size: 0.8rem; color: #666; letter-spacing: 1px; margin-bottom: 5px; text-transform: uppercase; }
+#currentPattern { font-family: 'Teko'; font-size: 3.5rem; color: white; display: flex; gap: 10px; align-items: center; line-height: 1; }
+.next-box { padding-left: 10px; }
+#nextPattern { font-family: 'Teko'; font-size: 1.8rem; color: #555; }
 
-.timer-controls { display: flex; gap: 20px; justify-content: center; padding-top: 10px; }
-.btn-control { background: transparent; border: 2px solid #555; color: #fff; padding: 10px 30px; border-radius: 50px; font-family: 'Teko'; font-size: 1.5rem; min-width: 140px; }
+.material-symbols-outlined { vertical-align: middle; font-size: 1em !important; }
+
+.timer-controls { display: flex; gap: 20px; justify-content: center; padding: 15px 0; flex-shrink: 0; }
+.btn-control { background: transparent; border: 2px solid #555; color: #fff; padding: 10px 40px; border-radius: 50px; font-family: 'Teko'; font-size: 1.8rem; min-width: 150px; cursor: pointer; }
 .btn-pause { border-color: var(--work); color: var(--work); }
 .btn-stop { border-color: #ff4444; color: #ff4444; }
 
-/* Finish Screen */
+/* --- FINISH SCREEN --- */
 #finish-screen { align-items: center; justify-content: center; text-align: center; }
-.finish-title { font-family: 'Teko'; font-size: 6rem; color: var(--rest); margin: 0; }
-.big-num { font-family: 'Teko'; font-size: 4rem; color: var(--work); }
+.finish-title { font-family: 'Teko'; font-size: 6rem; color: var(--rest); margin: 0; line-height: 1; }
+.finish-level { font-family: 'Teko'; font-size: 2.5rem; color: #fff; margin-bottom: 20px; text-transform: uppercase; }
+.finish-stat { background: #222; padding: 15px 40px; border-radius: 16px; border: 1px solid #333; margin-bottom: 30px; }
+.big-num { font-family: 'Teko'; font-size: 4rem; color: var(--work); line-height: 1; }
+
+/* ========================================= */
+/* RESPONSIVE LOGIC (The Fix) */
+/* ========================================= */
+
+/* Mobile Portrait Mode */
+@media (max-width: 768px) and (orientation: portrait) {
+    .container { padding: 15px; }
+    
+    /* Stack Dashboard */
+    .dashboard-grid { flex-direction: column; overflow-y: auto; gap: 10px; }
+    .center-col { border: none; padding: 10px 0; border-top: 1px solid #222; border-bottom: 1px solid #222; flex: 0 0 auto; }
+    .setup-col { overflow: visible; }
+    
+    .diff-btn { padding: 10px; margin-bottom: 5px; }
+    .diff-title { font-size: 1.6rem; }
+    
+    .rounds-title { font-size: 2.5rem; }
+    #setupRoundCount { font-size: 4rem; }
+    .c-btn { width: 50px; height: 50px; font-size: 24px; }
+
+    /* Timer Screen Portrait */
+    .timer-grid { flex-direction: column; justify-content: center; }
+    .timer-left { flex: 0 0 auto; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #222; width: 100%; }
+    .timer-right { border-left: none; padding-left: 0; width: 100%; justify-content: flex-start; }
+    
+    .main-clock { font-size: 8rem; }
+    #currentPattern { font-size: 2.8rem; justify-content: center; }
+    .pattern-box { text-align: center; }
+    .next-box { text-align: center; }
+}
+
+/* Mobile Landscape Mode (Your Preferred View) */
+@media (max-width: 900px) and (orientation: landscape) {
+    .container { padding: 5px 20px; }
+    .app-header { display: none; } /* Save space in landscape */
+    .stats-bar { display: none; } /* Save space in landscape */
+    
+    .dashboard-grid { align-items: center; }
+    .main-clock { font-size: 7rem; }
+    .pattern-box { padding: 10px; margin-bottom: 10px; }
+    #currentPattern { font-size: 2.5rem; }
+    .btn-start { padding: 5px 0; font-size: 1.8rem; }
+}
