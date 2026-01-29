@@ -16,15 +16,18 @@ const CONFIG = {
     'CHAMP':  { round: 600, rest: 60 }
 };
 
-// --- COMBOS ---
-const COMBOS = {
-    fixed: ["1", "1-2", "1-2-3"], 
-    pool: [
-        "1 ▲ 1", "1-2-7-2", "2-4", "1-1-2", "1-4 ► 2", "1-2-3",
-        "1-2-7-3", "1 ◄ 1-2", "1-3-7-3", "2-4 ◄ 4", "1-2-7-2",
-        "1-2 ▲ 3", "1-2-7-4-2", "2 ▲ 4-4", "1 ▲ 3-3", "1-3-7-4",
-        "2-4-7-3", "1 ► 2-2", "1-2-1-2", "3-4-3-4", "1 ► 2-4"
-    ]
+// --- ORIGINAL COMBOS SOURCE (Order 1-10) ---
+const PATTERNS_SOURCE = {
+    1: ["1","1-2","1-2-3"],
+    2: ["1 ▲ 1","1-2-7-2","2-4"],
+    3: ["1-1-2","1-4 ► 2","1-2-3"],
+    4: ["1-2-7-3","1 ◄ 1-2","1-3-7-3"],
+    5: ["2-4 ◄ 4","1-2-7-2","1-2 ▲ 3"],
+    6: ["1-2-7-4-2","2 ▲ 4-4","1 ▲ 3-3"],
+    7: ["1-3-7-4","2-4-7-3","1 ► 2-2"],
+    8: ["1-2-1-2-1-2","3-4-3-4-3-4","5-6-5-6-5-6"],
+    9: ["1 ► 2-4","1-7-3","2-7-4"],
+    10: ["1 ▲ 1-2-7-2","2-4-7-2-4","1-2-3-7-2"]
 };
 
 // --- STATE MANAGEMENT ---
@@ -38,8 +41,7 @@ let state = {
     totalTime: 0,
     currentRound: 0,
     workSeconds: 0,
-    // משתנה חדש: תור האימון
-    workoutQueue: [], 
+    playlist: [], // הרשימה השטוחה של כל התרגילים לפי הסדר
     timer: null,
     wakeLock: null
 };
@@ -50,6 +52,9 @@ document.addEventListener('DOMContentLoaded', () => {
         state.userId = crypto.randomUUID();
         localStorage.setItem('boxingUserId', state.userId);
     }
+
+    // בניית הפלייליסט הלינארי מהמאגר המקורי
+    buildPlaylist();
 
     if (API_URL && API_URL.includes('script.google.com')) {
         fetchStats();
@@ -70,6 +75,17 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-minus').onclick = () => changeRounds(-1);
     document.getElementById('btn-plus').onclick = () => changeRounds(1);
 });
+
+// פונקציה לבניית רשימה אחת ארוכה של תרגילים לפי הסדר
+function buildPlaylist() {
+    state.playlist = [];
+    // עוברים על כל הקבוצות (1 עד 10) ומוסיפים לרשימה אחת
+    for (let i = 1; i <= 10; i++) {
+        if (PATTERNS_SOURCE[i]) {
+            state.playlist.push(...PATTERNS_SOURCE[i]);
+        }
+    }
+}
 
 // --- APP LOGIC ---
 
@@ -107,9 +123,6 @@ function startWorkout() {
     state.workSeconds = 0;
     state.totalTime = calculateTotalTime();
     
-    // יצירת פלייליסט לכל האימון מראש
-    generateWorkoutQueue();
-
     document.getElementById('setup-screen').style.display = 'none';
     document.getElementById('timer-screen').style.display = 'flex';
     
@@ -119,46 +132,6 @@ function startWorkout() {
     if (state.timer) clearInterval(state.timer);
     state.timer = setInterval(tick, 1000);
     updateTimerUI();
-}
-
-// פונקציה חדשה: בניית תור האימון מראש
-function generateWorkoutQueue() {
-    state.workoutQueue = [];
-    const cfg = CONFIG[state.level];
-    // סה"כ שניות עבודה נטו באימון
-    const totalWorkSeconds = state.targetRounds * cfg.round;
-    
-    // חישוב כמה "סלוטים" של תרגילים אנחנו צריכים
-    // שלב א' (180 שניות) מתחלף כל 20 שניות = 9 סלוטים
-    // שלב ב' (השאר) מתחלף כל 15 שניות
-    
-    // 1. מילוי 3 דקות ראשונות (קבוע)
-    for (let i = 0; i < 9; i++) {
-        state.workoutQueue.push(COMBOS.fixed[i % 3]);
-    }
-    
-    // 2. מילוי שאר הזמן (רנדומלי - Deck of Cards)
-    let remainingTime = totalWorkSeconds - 180;
-    if (remainingTime > 0) {
-        let slotsNeeded = Math.ceil(remainingTime / 15) + 5; // +5 ליתר ביטחון
-        let tempDeck = [];
-        
-        for (let i = 0; i < slotsNeeded; i++) {
-            if (tempDeck.length === 0) {
-                tempDeck = [...COMBOS.pool].sort(() => Math.random() - 0.5);
-            }
-            state.workoutQueue.push(tempDeck.pop());
-        }
-    }
-}
-
-function getIndexFromTime(seconds) {
-    if (seconds < 180) {
-        return Math.floor(seconds / 20);
-    } else {
-        // אחרי 3 דקות, מתחילים ב-15 שניות, החל מאינדקס 9
-        return 9 + Math.floor((seconds - 180) / 15);
-    }
 }
 
 function tick() {
@@ -189,7 +162,6 @@ function handlePhaseChange() {
         state.phase = 'work';
         state.currentRound = 1;
         state.timeLeft = cfg.round;
-
     } else if (state.phase === 'work') {
         if (state.currentRound >= state.targetRounds) {
             finishSession();
@@ -197,7 +169,6 @@ function handlePhaseChange() {
         }
         state.phase = 'rest';
         state.timeLeft = cfg.rest;
-
     } else if (state.phase === 'rest') {
         state.phase = 'work';
         state.currentRound++;
@@ -205,7 +176,7 @@ function handlePhaseChange() {
     }
 }
 
-// --- UI UPDATE ---
+// --- UI UPDATE (With Logic for Next Up) ---
 function updateTimerUI() {
     document.getElementById('mainTimer').innerText = formatTime(state.timeLeft);
     document.getElementById('totalTimer').innerText = formatTime(state.totalTime);
@@ -217,14 +188,21 @@ function updateTimerUI() {
         body.classList.remove('rest-mode');
         status.innerText = `ROUND ${state.currentRound}`;
         
-        // שליפה מהתור המוכן מראש
-        const currentIndex = getIndexFromTime(state.workSeconds);
-        const currentCombo = state.workoutQueue[currentIndex] || "FREESTYLE";
-        const nextCombo = state.workoutQueue[currentIndex + 1] || "...";
+        // לוגיקה לבחירת תרגיל: מחליפים כל 15 שניות
+        // אנו משתמשים ב-workSeconds כדי לרוץ על הפלייליסט באופן קבוע
+        const intervalDuration = 15; // שניות לכל תרגיל
+        const totalIndex = Math.floor(state.workSeconds / intervalDuration);
+        
+        // שימוש ב-Modulo (%) כדי לחזור להתחלה אם נגמרה הרשימה
+        const currentIndex = totalIndex % state.playlist.length;
+        const nextIndex = (totalIndex + 1) % state.playlist.length;
+
+        const currentCombo = state.playlist[currentIndex];
+        const nextCombo = state.playlist[nextIndex];
 
         document.getElementById('currentPattern').innerHTML = parseIcons(currentCombo);
         
-        // עכשיו אנחנו יכולים לראות את הבא בתור!
+        // כעת אנו יודעים בוודאות מה הבא בתור
         document.getElementById('nextPattern').innerHTML = parseIcons(nextCombo);
         
     } else {
