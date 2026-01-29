@@ -1,9 +1,17 @@
 :root {
     --bg: #0b0b0b;
     --card: #141414;
-    --work: #0099ff;
-    --rest: #00ff99;
+    --blue: #0099ff;
+    --green: #00ff99;
     --text: #ffffff;
+    
+    /* צבע דינמי - משתנה לפי המצב */
+    --active-color: var(--blue); 
+}
+
+/* מצב מנוחה/חימום - דורס את הצבע לירוק */
+body.rest-mode {
+    --active-color: var(--green);
 }
 
 body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Assistant', sans-serif; height: 100vh; height: 100dvh; overflow: hidden; }
@@ -23,10 +31,10 @@ body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Assis
 /* --- STATS BAR --- */
 .stats-bar { display: flex; gap: 10px; margin-bottom: 10px; flex-shrink: 0; }
 .stat-card { background: #222; flex: 1; padding: 5px 10px; border-radius: 8px; text-align: center; border: 1px solid #333; }
-.stat-val { font-family: 'Teko'; font-size: 1.5rem; line-height: 1; color: var(--work); }
+.stat-val { font-family: 'Teko'; font-size: 1.5rem; line-height: 1; color: var(--active-color); }
 .stat-label { font-size: 0.6rem; color: #888; letter-spacing: 1px; }
 
-/* --- DASHBOARD GRID (SETUP) --- */
+/* --- SETUP SCREEN --- */
 #setup-screen { display: flex; flex-direction: column; height: 100%; width: 100%; }
 .dashboard-grid { display: flex; flex: 1; gap: 20px; overflow: hidden; min-height: 0; }
 .setup-col { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 8px; overflow-y: auto; }
@@ -34,94 +42,91 @@ body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Assis
 
 /* Diff Buttons */
 .diff-btn { border: 1px solid #333; padding: 15px; border-radius: 10px; cursor: pointer; transition: 0.2s; background: rgba(255,255,255,0.02); }
-.diff-btn.active { background: rgba(0, 153, 255, 0.15); border-color: var(--work); box-shadow: 0 0 10px rgba(0,153,255,0.1); }
+.diff-btn.active { background: rgba(255, 255, 255, 0.05); border-color: var(--active-color); box-shadow: 0 0 10px rgba(0,0,0,0.5); }
 .diff-title { font-family: 'Teko'; font-size: 2rem; line-height: 1; color: #888; margin: 0; }
-.diff-btn.active .diff-title { color: var(--work); }
+.diff-btn.active .diff-title { color: var(--active-color); }
 .diff-details { font-size: 0.8rem; color: #555; margin-top: 2px; }
 .diff-btn.active .diff-details { color: #fff; }
 
-/* Counter */
-.rounds-title { font-family: 'Teko'; font-size: 3.5rem; color: var(--work); line-height: 1; margin-bottom: 10px; }
+/* Counter & Setup Fonts */
+.rounds-title { font-family: 'Teko'; font-size: 3.5rem; color: var(--active-color); line-height: 1; margin-bottom: 10px; }
 .counter-controls { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
 .c-btn { width: 60px; height: 60px; border-radius: 50%; background: #222; color: #fff; font-size: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 1px solid #444; }
-.c-btn:active { background: var(--work); color: black; border-color: var(--work); }
+.c-btn:active { background: var(--active-color); color: black; border-color: var(--active-color); }
 #setupRoundCount { font-family: 'Teko'; font-size: 6rem; width: 90px; text-align: center; line-height: 1; }
 .info-label { font-family: 'Teko'; color: #666; font-size: 1.2rem; }
 
 /* Start Button */
 .start-container { padding: 10px 0; flex-shrink: 0; }
-.btn-start { background: transparent; border: 2px solid var(--work); color: var(--work); padding: 12px 0; width: 100%; font-family: 'Teko'; font-size: 2.2rem; border-radius: 50px; cursor: pointer; letter-spacing: 1px; }
-.btn-start:active { background: var(--work); color: black; transform: scale(0.98); }
+.btn-start { background: transparent; border: 2px solid var(--active-color); color: var(--active-color); padding: 12px 0; width: 100%; font-family: 'Teko'; font-size: 2.2rem; border-radius: 50px; cursor: pointer; letter-spacing: 1px; }
+.btn-start:active { background: var(--active-color); color: black; transform: scale(0.98); }
 
-/* --- TIMER SCREEN --- */
+/* --- TIMER SCREEN (THE BIG CHANGES) --- */
 #timer-screen, #finish-screen { display: none; flex-direction: column; height: 100%; }
 .timer-grid { display: flex; flex: 1; align-items: center; width: 100%; }
 .timer-left { flex: 1; text-align: center; display: flex; flex-direction: column; justify-content: center; }
 .timer-right { flex: 1; padding-left: 20px; border-left: 1px solid #333; height: 100%; display: flex; flex-direction: column; justify-content: center; }
 
-.main-clock { font-family: 'Teko'; font-size: 10rem; line-height: 0.85; color: var(--work); }
-.sub-info { font-family: 'Teko'; font-size: 2rem; color: #888; }
+/* שימוש ב-VH כדי להבטיח גודל עצום גם בטלפון אופקי */
+.main-clock { font-family: 'Teko'; font-size: 30vh; line-height: 0.85; color: var(--active-color); transition: color 0.3s ease; }
+.sub-info { font-family: 'Teko'; font-size: 4vh; color: #888; }
 
-.pattern-box { background: #1a1a1a; padding: 20px; border-left: 6px solid var(--work); margin-bottom: 20px; border-radius: 12px; width: 100%; }
+.pattern-box { background: #1a1a1a; padding: 10px 20px; border-left: 8px solid var(--active-color); margin-bottom: 20px; border-radius: 12px; width: 100%; transition: border-color 0.3s ease; }
 .pattern-label { font-size: 0.8rem; color: #666; letter-spacing: 1px; margin-bottom: 5px; text-transform: uppercase; }
-#currentPattern { font-family: 'Teko'; font-size: 3.5rem; color: white; display: flex; gap: 10px; align-items: center; line-height: 1; }
-.next-box { padding-left: 10px; }
-#nextPattern { font-family: 'Teko'; font-size: 1.8rem; color: #555; }
 
-.material-symbols-outlined { vertical-align: middle; font-size: 1em !important; }
+/* הגדלה משמעותית של התרגילים */
+#currentPattern { font-family: 'Teko'; font-size: 20vh; color: white; display: flex; gap: 15px; align-items: center; line-height: 0.9; }
+.next-box { padding-left: 10px; }
+#nextPattern { font-family: 'Teko'; font-size: 6vh; color: #555; }
+
+.material-symbols-outlined { vertical-align: middle; font-size: 0.8em !important; }
 
 .timer-controls { display: flex; gap: 20px; justify-content: center; padding: 15px 0; flex-shrink: 0; }
 .btn-control { background: transparent; border: 2px solid #555; color: #fff; padding: 10px 40px; border-radius: 50px; font-family: 'Teko'; font-size: 1.8rem; min-width: 150px; cursor: pointer; }
-.btn-pause { border-color: var(--work); color: var(--work); }
+.btn-pause { border-color: var(--active-color); color: var(--active-color); }
 .btn-stop { border-color: #ff4444; color: #ff4444; }
 
 /* --- FINISH SCREEN --- */
 #finish-screen { align-items: center; justify-content: center; text-align: center; }
-.finish-title { font-family: 'Teko'; font-size: 6rem; color: var(--rest); margin: 0; line-height: 1; }
-.finish-level { font-family: 'Teko'; font-size: 2.5rem; color: #fff; margin-bottom: 20px; text-transform: uppercase; }
+.finish-title { font-family: 'Teko'; font-size: 15vh; color: var(--green); margin: 0; line-height: 1; }
+.finish-level { font-family: 'Teko'; font-size: 5vh; color: #fff; margin-bottom: 20px; text-transform: uppercase; }
 .finish-stat { background: #222; padding: 15px 40px; border-radius: 16px; border: 1px solid #333; margin-bottom: 30px; }
-.big-num { font-family: 'Teko'; font-size: 4rem; color: var(--work); line-height: 1; }
+.big-num { font-family: 'Teko'; font-size: 10vh; color: var(--active-color); line-height: 1; }
 
 /* ========================================= */
-/* RESPONSIVE LOGIC (The Fix) */
+/* RESPONSIVE LOGIC */
 /* ========================================= */
 
 /* Mobile Portrait Mode */
 @media (max-width: 768px) and (orientation: portrait) {
     .container { padding: 15px; }
-    
-    /* Stack Dashboard */
     .dashboard-grid { flex-direction: column; overflow-y: auto; gap: 10px; }
     .center-col { border: none; padding: 10px 0; border-top: 1px solid #222; border-bottom: 1px solid #222; flex: 0 0 auto; }
     .setup-col { overflow: visible; }
     
-    .diff-btn { padding: 10px; margin-bottom: 5px; }
-    .diff-title { font-size: 1.6rem; }
-    
     .rounds-title { font-size: 2.5rem; }
     #setupRoundCount { font-size: 4rem; }
-    .c-btn { width: 50px; height: 50px; font-size: 24px; }
 
     /* Timer Screen Portrait */
     .timer-grid { flex-direction: column; justify-content: center; }
     .timer-left { flex: 0 0 auto; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #222; width: 100%; }
     .timer-right { border-left: none; padding-left: 0; width: 100%; justify-content: flex-start; }
     
-    .main-clock { font-size: 8rem; }
-    #currentPattern { font-size: 2.8rem; justify-content: center; }
+    .main-clock { font-size: 18vh; } /* קצת יותר קטן בפורטרט כדי שייכנס */
+    #currentPattern { font-size: 10vh; justify-content: center; }
     .pattern-box { text-align: center; }
     .next-box { text-align: center; }
 }
 
-/* Mobile Landscape Mode (Your Preferred View) */
+/* Mobile Landscape Mode */
 @media (max-width: 900px) and (orientation: landscape) {
     .container { padding: 5px 20px; }
-    .app-header { display: none; } /* Save space in landscape */
-    .stats-bar { display: none; } /* Save space in landscape */
+    .app-header { display: none; } 
+    .stats-bar { display: none; } 
     
     .dashboard-grid { align-items: center; }
-    .main-clock { font-size: 7rem; }
-    .pattern-box { padding: 10px; margin-bottom: 10px; }
-    #currentPattern { font-size: 2.5rem; }
+    /* שימוש במימדים העצומים */
+    .main-clock { font-size: 35vh; } 
+    #currentPattern { font-size: 22vh; }
     .btn-start { padding: 5px 0; font-size: 1.8rem; }
 }
