@@ -1,95 +1,87 @@
 :root {
     --bg: #0b0b0b;
-    --work-color: #0099ff;
-    --rest-color: #00ff99;
-    --muted: #666;
-    --white: #ffffff;
-    --active-bg: rgba(0, 153, 255, 0.15);
+    --card: #141414;
+    --work: #0099ff;
+    --rest: #00ff99;
+    --text: #ffffff;
 }
 
-* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; select: none; user-select: none; touch-action: manipulation; }
+body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Assistant', sans-serif; overflow: hidden; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
 
-body {
-    margin: 0; height: 100vh; height: 100dvh; background: var(--bg);
-    display: flex; justify-content: center; align-items: center;
-    font-family: 'Assistant', sans-serif; color: var(--white); overflow: hidden;
+/* --- FORCED LANDSCAPE HACK --- */
+.rotate-wrapper {
+    width: 100vw; height: 100vh; position: relative; overflow: hidden;
+}
+
+/* במצב פורטרט: סובב את כל האפליקציה ב-90 מעלות */
+@media (orientation: portrait) {
+    .container {
+        position: absolute;
+        top: 50%; left: 50%;
+        width: 100vh; height: 100vw; /* החלפת מימדים */
+        transform: translate(-50%, -50%) rotate(90deg);
+    }
+}
+@media (orientation: landscape) {
+    .container { width: 100%; height: 100%; }
 }
 
 .container {
-    width: 96%; height: 94vh; height: 94dvh; max-width: 1200px;
     background: linear-gradient(180deg, #181818, #0e0e0e);
-    border-radius: 24px; padding: 20px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.8); border: 1px solid #222;
-    display: flex; flex-direction: column; position: relative;
+    display: flex; flex-direction: column; padding: 10px 20px;
 }
 
-/* --- UI STYLES (זהה לקוד הקודם) --- */
-#setup-screen { display: flex; flex-direction: column; height: 100%; width: 100%; }
-.dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; flex: 1; align-items: center; overflow-y: auto; padding-bottom: 20px; }
-.setup-left { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; border-right: 1px solid #333; }
-.setup-right { display: flex; flex-direction: column; justify-content: center; gap: 15px; height: 100%; padding: 0 20px; }
-.diff-btn { background: transparent; border: 2px solid #333; border-radius: 16px; padding: 20px; cursor: pointer; text-align: left; transition: all 0.2s ease; }
-.diff-btn.active { background: var(--active-bg); border-color: var(--work-color); box-shadow: 0 0 15px rgba(0, 153, 255, 0.2); }
-.diff-title { font-family: 'Teko', sans-serif; font-size: 2.2rem; font-weight: 700; margin: 0; line-height: 1; color: #777; }
-.diff-btn.active .diff-title { color: var(--work-color); }
-.diff-details { font-family: 'Assistant', sans-serif; font-size: 0.9rem; color: #555; margin-top: 5px; font-weight: 700; }
-.diff-btn.active .diff-details { color: #fff; }
-.rounds-wrapper { text-align: center; }
-.rounds-title { font-family: 'Teko', sans-serif; font-size: 4rem; color: var(--work-color); line-height: 1; margin-bottom: 20px; }
-.counter-controls { display: flex; align-items: center; gap: 20px; justify-content: center; }
-.c-btn { width: 70px; height: 70px; border-radius: 50%; background: #222; border: 2px solid #444; color: white; font-size: 35px; cursor: pointer; display: flex; justify-content: center; align-items: center; }
-.c-btn:active { background: var(--work-color); border-color: var(--work-color); color: black; }
-#setupRoundCount { font-family: 'Teko', sans-serif; font-size: 80px; min-width: 90px; }
-.info-label { font-family: 'Teko', sans-serif; font-size: 1.5rem; color: #666; margin-top: 20px; text-transform: uppercase; letter-spacing: 1px; }
-.start-container { width: 100%; display: flex; justify-content: center; padding: 10px 0; z-index: 100; }
-.btn-start { background: transparent; color: var(--work-color); border: 3px solid var(--work-color); padding: 15px 80px; border-radius: 999px; font-family: 'Teko', sans-serif; font-weight: 700; font-size: 2.5rem; cursor: pointer; box-shadow: 0 0 15px rgba(0,153,255,0.1); text-transform: uppercase; }
-.btn-start:active { transform: scale(0.96); background: var(--work-color); color: #000; }
+/* --- LAYOUT --- */
+.app-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 5px; }
+.logo-text { font-family: 'Teko'; font-size: 1.5rem; letter-spacing: 2px; color: #444; }
+.icon-btn { background: none; border: none; color: #666; cursor: pointer; }
 
-/* Timer Screen */
-#timer-screen { display: none; height: 100%; width: 100%; flex-direction: column; }
-.timer-left { text-align: left; display: flex; flex-direction: column; justify-content: center; height: 100%; }
-.timer-right { text-align: left; border-left: 1px solid #333; padding-left: 40px; display: flex; flex-direction: column; justify-content: center; height: 100%; }
-.main-clock { font-family: 'Teko', sans-serif; font-size: 160px; line-height: 0.85; color: var(--work-color); text-shadow: 0 0 40px rgba(0,153,255,0.3); }
-.sub-clock { font-family: 'Teko', sans-serif; font-size: 50px; color: white; }
-.pattern-box { background: #1a1a1a; border-radius: 20px; padding: 25px; border-left: 6px solid var(--work-color); margin-bottom: 25px; }
-.pattern-label { color: var(--muted); font-size: 0.9rem; letter-spacing: 1px; margin-bottom: 5px; text-transform: uppercase;}
-#currentPattern { font-family: 'Teko', sans-serif; font-size: 55px; color: white; line-height: 1.1; display: flex; align-items: center; gap: 10px; }
-#nextPattern { font-family: 'Teko', sans-serif; font-size: 32px; color: #666; display: flex; align-items: center; gap: 5px;}
-.timer-controls { display: flex; justify-content: center; gap: 20px; padding: 10px 0; z-index: 100; }
-.btn-control { border-radius: 999px; padding: 12px 40px; font-family: 'Teko'; font-size: 1.8rem; font-weight: 700; cursor: pointer; border: none; min-width: 160px; }
-.btn-pause { background: transparent; border: 2px solid var(--work-color); color: var(--work-color); }
-.btn-stop { background: transparent; border: 2px solid #ff4444; color: #ff4444; }
+/* Stats Bar */
+.stats-bar { display: flex; gap: 15px; margin-bottom: 10px; }
+.stat-card { background: #222; flex: 1; padding: 10px; border-radius: 12px; text-align: center; border: 1px solid #333; }
+.stat-val { font-family: 'Teko'; font-size: 1.8rem; line-height: 1; color: var(--work); }
+.stat-label { font-size: 0.7rem; color: #888; letter-spacing: 1px; }
+
+/* Dashboard Grid */
+.dashboard-grid { display: flex; flex: 1; gap: 20px; overflow: hidden; }
+.setup-col { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 8px; }
+.center-col { align-items: center; border-left: 1px solid #222; border-right: 1px solid #222; }
+
+/* Diff Buttons */
+.diff-btn { border: 1px solid #333; padding: 12px 15px; border-radius: 10px; cursor: pointer; transition: 0.2s; }
+.diff-btn.active { background: rgba(0, 153, 255, 0.1); border-color: var(--work); }
+.diff-title { font-family: 'Teko'; font-size: 1.8rem; line-height: 1; color: #888; }
+.diff-btn.active .diff-title { color: var(--work); }
+.diff-details { font-size: 0.75rem; color: #555; }
+
+/* Counter */
+.rounds-title { font-family: 'Teko'; font-size: 3rem; color: var(--work); }
+.counter-controls { display: flex; align-items: center; gap: 20px; }
+.c-btn { width: 60px; height: 60px; border-radius: 50%; background: #222; color: #fff; font-size: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.c-btn:active { background: var(--work); color: black; }
+#setupRoundCount { font-family: 'Teko'; font-size: 5rem; width: 80px; text-align: center; }
+
+/* Timer Layout */
+#timer-screen, #finish-screen { display: none; flex-direction: column; height: 100%; }
+.timer-grid { display: flex; flex: 1; align-items: center; }
+.timer-left { flex: 1; text-align: center; display: flex; flex-direction: column; justify-content: center; }
+.timer-right { flex: 1; padding-left: 20px; border-left: 1px solid #333; }
+
+.main-clock { font-family: 'Teko'; font-size: 8rem; line-height: 0.9; color: var(--work); }
+.pattern-box { background: #1a1a1a; padding: 15px; border-left: 4px solid var(--work); margin-bottom: 15px; border-radius: 8px; }
+#currentPattern { font-family: 'Teko'; font-size: 2.5rem; color: white; display: flex; gap: 10px; }
+.material-symbols-outlined { vertical-align: middle; }
+
+.btn-start { background: transparent; border: 2px solid var(--work); color: var(--work); padding: 10px 0; width: 100%; font-family: 'Teko'; font-size: 2rem; border-radius: 50px; margin-top: 10px; cursor: pointer; }
+.btn-start:active { background: var(--work); color: black; }
+
+.timer-controls { display: flex; gap: 20px; justify-content: center; padding-top: 10px; }
+.btn-control { background: transparent; border: 2px solid #555; color: #fff; padding: 10px 30px; border-radius: 50px; font-family: 'Teko'; font-size: 1.5rem; min-width: 140px; }
+.btn-pause { border-color: var(--work); color: var(--work); }
+.btn-stop { border-color: #ff4444; color: #ff4444; }
 
 /* Finish Screen */
-#finish-screen { display: none; height: 100%; width: 100%; text-align: center; flex-direction: column; justify-content: center; align-items: center; }
-.finish-title { font-family: 'Teko'; font-size: 7rem; color: var(--rest-color); line-height: 1; margin: 0; }
-.finish-level { font-family: 'Teko'; font-size: 3rem; color: #fff; margin-bottom: 30px; text-transform: uppercase; }
-.finish-stat { background: #222; padding: 15px 40px; border-radius: 15px; border: 1px solid #444; display: inline-block; margin-bottom: 40px;}
-.material-symbols-outlined { font-size: 1.25em !important; vertical-align: middle; }
-
-/* Responsive */
-@media (max-width: 900px) and (orientation: portrait) {
-    .container { padding: 15px; height: 98dvh; width: 98%; }
-    .dashboard-grid { grid-template-columns: 1fr; gap: 10px; overflow-y: scroll; display: block;}
-    .setup-right { padding: 10px 0; margin-bottom: 20px; border-bottom: 1px solid #333; display: block; height: auto; }
-    .setup-left { border-right: none; height: auto; padding: 20px 0; }
-    .rounds-title { font-size: 3rem; }
-    .diff-btn { margin-bottom: 10px; padding: 15px; }
-    .timer-left { height: auto; text-align: center; border-bottom: 1px solid #333; padding-bottom: 15px; margin-bottom: 15px; }
-    .timer-right { border-left: none; padding-left: 0; height: auto; text-align: center; }
-    .main-clock { font-size: 110px; }
-    #currentPattern { justify-content: center; font-size: 40px; }
-    .btn-start { padding: 12px 50px; font-size: 2rem; }
-}
-@media (max-width: 900px) and (orientation: landscape) {
-    .container { height: 98dvh; padding: 10px 20px; max-width: 100%; }
-    .dashboard-grid { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 20px; overflow-y: hidden !important; padding-bottom: 0; align-items: center; height: 100%; }
-    .timer-left { border-bottom: none !important; border-right: 1px solid #333; padding-bottom: 0 !important; margin-bottom: 0 !important; height: 100%; justify-content: center; text-align: left; }
-    .timer-right { border-left: none; padding-left: 10px !important; height: 100%; text-align: left !important; justify-content: center; }
-    .main-clock { font-size: 90px !important; line-height: 0.9; }
-    .sub-clock { font-size: 30px !important; }
-    #currentPattern { font-size: 45px !important; justify-content: flex-start !important; }
-    .setup-right { padding: 0 !important; gap: 5px; height: 100%; justify-content: center; border-bottom: none;}
-    .setup-left { border-right: 1px solid #333; height: 100%; padding: 0;}
-    .diff-btn { padding: 10px !important; margin-bottom: 5px; }
-}
+#finish-screen { align-items: center; justify-content: center; text-align: center; }
+.finish-title { font-family: 'Teko'; font-size: 6rem; color: var(--rest); margin: 0; }
+.big-num { font-family: 'Teko'; font-size: 4rem; color: var(--work); }
