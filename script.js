@@ -1,7 +1,7 @@
 // ************************************************
 // PASTE YOUR GOOGLE SCRIPT URL HERE INSIDE THE QUOTES
 // ************************************************
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyhFe573lGoje_TsHLZyOv9f4uO0Ccdxiw2J_tJtV8tGgTkyUq6MCTNemI2LkyrOH7t/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbynhdDZ9-8Ms-hNys8mxYRmUKd5NkkpcoV9zCHHwaTcAAFARRg_LGkBguKVaKPxXoQb/exec";
 // ************************************************
 
 function triggerHaptic() { if (navigator.vibrate) navigator.vibrate(40); }
