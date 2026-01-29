@@ -7,106 +7,110 @@
     
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Boxing Pro">
     <meta name="theme-color" content="#0b0b0b">
+    <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/evenrom/boxing-timer-assets/refs/heads/main/icon.png">
+    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/evenrom/boxing-timer-assets/refs/heads/main/icon.png">
 
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700&family=Teko:wght@500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+    
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="rotate-wrapper">
-    <div class="container">
-        
-        <div class="app-header">
-            <button id="muteBtn" class="icon-btn"><span class="material-symbols-outlined">volume_up</span></button>
-            <div class="logo-text">BOXING PRO</div>
-        </div>
-
-        <div id="setup-screen">
-            
-            <div class="stats-bar">
-                <div class="stat-card">
-                    <div class="stat-val" id="stat-weekly">--</div>
-                    <div class="stat-label">WEEKLY</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-val" id="stat-duration">--</div>
-                    <div class="stat-label">AVG MIN</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-val" id="stat-level">--</div>
-                    <div class="stat-label">LEVEL</div>
-                </div>
-            </div>
-
-            <div class="dashboard-grid">
-                <div class="setup-col">
-                    <div class="diff-btn active" id="btn-rookie" onclick="app.selectDiff('ROOKIE')">
-                        <div class="diff-title">ROOKIE</div>
-                        <div class="diff-details">3 MIN • 20 SEC REST</div>
-                    </div>
-                    <div class="diff-btn" id="btn-pro" onclick="app.selectDiff('PRO')">
-                        <div class="diff-title">PRO</div>
-                        <div class="diff-details">5 MIN • 30 SEC REST</div>
-                    </div>
-                    <div class="diff-btn" id="btn-champ" onclick="app.selectDiff('CHAMP')">
-                        <div class="diff-title">CHAMP</div>
-                        <div class="diff-details">10 MIN • 60 SEC REST</div>
-                    </div>
-                </div>
-
-                <div class="setup-col center-col">
-                    <div class="rounds-title">ROUNDS</div>
-                    <div class="counter-controls">
-                        <div class="c-btn" id="btn-minus">−</div>
-                        <span id="setupRoundCount">8</span>
-                        <div class="c-btn" id="btn-plus">+</div>
-                    </div>
-                    <div class="info-label">TOTAL TIME: <span id="totalTimePreview">--:--</span></div>
-                </div>
-            </div>
-
-            <div class="start-container">
-                <button class="btn-start" id="btn-start-fight">START FIGHT</button>
-            </div>
-        </div>
-
-        <div id="timer-screen">
-            <div class="timer-grid">
-                <div class="timer-left">
-                    <div id="mainTimer" class="main-clock">00:00</div>
-                    <div class="sub-info">TOTAL: <span id="totalTimer">00:00</span></div>
-                </div>
-                <div class="timer-right">
-                    <div id="statusText" class="rounds-title">ROUND 1</div>
-                    <div class="pattern-box">
-                        <div class="pattern-label">CURRENT COMBO</div>
-                        <div id="currentPattern">GET READY</div>
-                    </div>
-                    <div class="next-box">
-                        <div class="pattern-label">NEXT UP</div>
-                        <div id="nextPattern">...</div>
-                    </div>
-                </div>
-            </div>
-            <div class="timer-controls">
-                <button class="btn-control btn-pause" id="pauseBtn">PAUSE</button>
-                <button class="btn-control btn-stop" id="stopBtn">END</button>
-            </div>
-        </div>
-
-        <div id="finish-screen">
-            <h1 class="finish-title">VICTORY</h1>
-            <div class="finish-level" id="finishLevelText">COMPLETED</div>
-            <div class="finish-stat">
-                <span>ROUNDS</span><br>
-                <span id="finishRoundsVal" class="big-num">8</span>
-            </div>
-            <button class="btn-start" id="btn-restart">DONE</button>
-        </div>
-
+<div class="container">
+    
+    <div class="app-header">
+        <button id="muteBtn" class="icon-btn"><span class="material-symbols-outlined">volume_up</span></button>
+        <div class="logo-text">BOXING PRO</div>
+        <div style="width: 24px;"></div> 
     </div>
+
+    <div id="setup-screen">
+        
+        <div class="stats-bar">
+            <div class="stat-card">
+                <div class="stat-val" id="stat-weekly">--</div>
+                <div class="stat-label">WEEKLY</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-val" id="stat-duration">--</div>
+                <div class="stat-label">AVG MIN</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-val" id="stat-level">--</div>
+                <div class="stat-label">LEVEL</div>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="setup-col">
+                <div class="diff-btn active" id="btn-rookie" onclick="app.selectDiff('ROOKIE')">
+                    <div class="diff-title">ROOKIE</div>
+                    <div class="diff-details">3 MIN • 20 SEC REST</div>
+                </div>
+                <div class="diff-btn" id="btn-pro" onclick="app.selectDiff('PRO')">
+                    <div class="diff-title">PRO</div>
+                    <div class="diff-details">5 MIN • 30 SEC REST</div>
+                </div>
+                <div class="diff-btn" id="btn-champ" onclick="app.selectDiff('CHAMP')">
+                    <div class="diff-title">CHAMP</div>
+                    <div class="diff-details">10 MIN • 60 SEC REST</div>
+                </div>
+            </div>
+
+            <div class="setup-col center-col">
+                <div class="rounds-title">ROUNDS</div>
+                <div class="counter-controls">
+                    <div class="c-btn" id="btn-minus">−</div>
+                    <span id="setupRoundCount">8</span>
+                    <div class="c-btn" id="btn-plus">+</div>
+                </div>
+                <div class="info-label">TOTAL TIME: <span id="totalTimePreview">--:--</span></div>
+            </div>
+        </div>
+
+        <div class="start-container">
+            <button class="btn-start" id="btn-start-fight">START FIGHT</button>
+        </div>
+    </div>
+
+    <div id="timer-screen">
+        <div class="timer-grid">
+            <div class="timer-left">
+                <div id="mainTimer" class="main-clock">00:00</div>
+                <div class="sub-info">TOTAL: <span id="totalTimer">00:00</span></div>
+            </div>
+            <div class="timer-right">
+                <div id="statusText" class="rounds-title">ROUND 1</div>
+                <div class="pattern-box">
+                    <div class="pattern-label">CURRENT COMBO</div>
+                    <div id="currentPattern">GET READY</div>
+                </div>
+                <div class="next-box">
+                    <div class="pattern-label">NEXT UP</div>
+                    <div id="nextPattern">...</div>
+                </div>
+            </div>
+        </div>
+        <div class="timer-controls">
+            <button class="btn-control btn-pause" id="pauseBtn">PAUSE</button>
+            <button class="btn-control btn-stop" id="stopBtn">END</button>
+        </div>
+    </div>
+
+    <div id="finish-screen">
+        <h1 class="finish-title">VICTORY</h1>
+        <div class="finish-level" id="finishLevelText">COMPLETED</div>
+        <div class="finish-stat">
+            <span style="color:#888; text-transform: uppercase; font-size: 0.9rem;">ROUNDS</span><br>
+            <span id="finishRoundsVal" class="big-num">8</span>
+        </div>
+        <button class="btn-start" id="btn-restart">DONE</button>
+    </div>
+
 </div>
 
 <script src="script.js"></script>
