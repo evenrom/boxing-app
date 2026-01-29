@@ -26,7 +26,8 @@ body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Assis
 /* --- HEADER --- */
 .app-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 5px; flex-shrink: 0; }
 .logo-text { font-family: 'Teko'; font-size: 1.5rem; letter-spacing: 2px; color: #444; }
-.icon-btn { background: none; border: none; color: #666; cursor: pointer; padding: 5px; }
+.icon-btn { background: none; border: none; color: #666; cursor: pointer; padding: 15px; /* הגדלת אזור הלחיצה */ }
+.icon-btn .material-symbols-outlined { font-size: 2.5rem; /* הגדלת האייקון */ }
 
 /* --- STATS BAR --- */
 .stats-bar { display: flex; gap: 10px; margin-bottom: 10px; flex-shrink: 0; }
@@ -61,23 +62,23 @@ body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Assis
 .btn-start { background: transparent; border: 2px solid var(--active-color); color: var(--active-color); padding: 12px 0; width: 100%; font-family: 'Teko'; font-size: 2.2rem; border-radius: 50px; cursor: pointer; letter-spacing: 1px; }
 .btn-start:active { background: var(--active-color); color: black; transform: scale(0.98); }
 
-/* --- TIMER SCREEN (THE BIG CHANGES) --- */
+/* --- TIMER SCREEN --- */
 #timer-screen, #finish-screen { display: none; flex-direction: column; height: 100%; }
 .timer-grid { display: flex; flex: 1; align-items: center; width: 100%; }
 .timer-left { flex: 1; text-align: center; display: flex; flex-direction: column; justify-content: center; }
 .timer-right { flex: 1; padding-left: 20px; border-left: 1px solid #333; height: 100%; display: flex; flex-direction: column; justify-content: center; }
 
-/* שימוש ב-VH כדי להבטיח גודל עצום גם בטלפון אופקי */
+/* גודל השעון נשמר */
 .main-clock { font-family: 'Teko'; font-size: 30vh; line-height: 0.85; color: var(--active-color); transition: color 0.3s ease; }
 .sub-info { font-family: 'Teko'; font-size: 4vh; color: #888; }
 
 .pattern-box { background: #1a1a1a; padding: 10px 20px; border-left: 8px solid var(--active-color); margin-bottom: 20px; border-radius: 12px; width: 100%; transition: border-color 0.3s ease; }
 .pattern-label { font-size: 0.8rem; color: #666; letter-spacing: 1px; margin-bottom: 5px; text-transform: uppercase; }
 
-/* הגדלה משמעותית של התרגילים */
-#currentPattern { font-family: 'Teko'; font-size: 20vh; color: white; display: flex; gap: 15px; align-items: center; line-height: 0.9; }
+/* הקטנת התרגילים בכ-20% */
+#currentPattern { font-family: 'Teko'; font-size: 16vh; /* הוקטן מ-20vh */ color: white; display: flex; gap: 15px; align-items: center; line-height: 0.9; }
 .next-box { padding-left: 10px; }
-#nextPattern { font-family: 'Teko'; font-size: 6vh; color: #555; }
+#nextPattern { font-family: 'Teko'; font-size: 5vh; /* הוקטן מ-6vh */ color: #555; }
 
 .material-symbols-outlined { vertical-align: middle; font-size: 0.8em !important; }
 
@@ -112,8 +113,9 @@ body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Assis
     .timer-left { flex: 0 0 auto; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #222; width: 100%; }
     .timer-right { border-left: none; padding-left: 0; width: 100%; justify-content: flex-start; }
     
-    .main-clock { font-size: 18vh; } /* קצת יותר קטן בפורטרט כדי שייכנס */
-    #currentPattern { font-size: 10vh; justify-content: center; }
+    .main-clock { font-size: 18vh; } 
+    /* גם כאן הקטנתי בהתאמה */
+    #currentPattern { font-size: 8vh; justify-content: center; }
     .pattern-box { text-align: center; }
     .next-box { text-align: center; }
 }
@@ -125,8 +127,9 @@ body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Assis
     .stats-bar { display: none; } 
     
     .dashboard-grid { align-items: center; }
-    /* שימוש במימדים העצומים */
+    
     .main-clock { font-size: 35vh; } 
-    #currentPattern { font-size: 22vh; }
+    /* גם כאן הקטנתי בהתאמה */
+    #currentPattern { font-size: 18vh; }
     .btn-start { padding: 5px 0; font-size: 1.8rem; }
 }
