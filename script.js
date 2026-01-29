@@ -1,357 +1,135 @@
-// --- CONFIGURATION ---
-// החלף את השורה למטה בכתובת ה-URL שקיבלת מגוגל סקריפט
-const API_URL = "https://script.google.com/macros/s/AKfycbynhdDZ9-8Ms-hNys8mxYRmUKd5NkkpcoV9zCHHwaTcAAFARRg_LGkBguKVaKPxXoQb/exec";
-
-// --- AUDIO ASSETS ---
-const SOUNDS = {
-    bell: new Audio('https://github.com/evenrom/boxing-timer-assets/raw/refs/heads/main/bell.mp3'),
-    minute: new Audio('https://github.com/evenrom/boxing-timer-assets/raw/refs/heads/main/minute.mp3'),
-    countdown: new Audio('https://github.com/evenrom/boxing-timer-assets/raw/refs/heads/main/countdown.mp3')
-};
-
-// --- DIFFICULTY SETTINGS ---
-const CONFIG = {
-    'ROOKIE': { round: 180, rest: 20 },
-    'PRO':    { round: 300, rest: 30 },
-    'CHAMP':  { round: 600, rest: 60 }
-};
-
-// --- COMBOS & PATTERNS ---
-const COMBOS = {
-    // שלב א': 3 דקות ראשונות קבועות
-    fixed: ["1", "1-2", "1-2-3"], 
-    // שלב ב': המאגר המלא (Deck of Cards)
-    pool: [
-        "1 ▲ 1", "1-2-7-2", "2-4", "1-1-2", "1-4 ► 2", "1-2-3",
-        "1-2-7-3", "1 ◄ 1-2", "1-3-7-3", "2-4 ◄ 4", "1-2-7-2",
-        "1-2 ▲ 3", "1-2-7-4-2", "2 ▲ 4-4", "1 ▲ 3-3", "1-3-7-4",
-        "2-4-7-3", "1 ► 2-2", "1-2-1-2", "3-4-3-4", "1 ► 2-4"
-    ]
-};
-
-// --- STATE MANAGEMENT ---
-let state = {
-    level: 'ROOKIE',
-    targetRounds: 8,
-    isMuted: localStorage.getItem('boxingMuted') === 'true',
-    userId: localStorage.getItem('boxingUserId'),
-    phase: 'setup', // setup, warmup, work, rest
-    timeLeft: 0,
-    totalTime: 0,
-    currentRound: 0,
-    workSeconds: 0, // סופר כמה זמן נטו עבדנו (לשינוי קומבינציות)
-    deck: [],       // חפיסת הקלפים הנוכחית
-    timer: null,
-    wakeLock: null
-};
-
-// --- INITIALIZATION ---
-document.addEventListener('DOMContentLoaded', () => {
-    // 1. יצירת/שליפת מזהה משתמש
-    if (!state.userId) {
-        state.userId = crypto.randomUUID();
-        localStorage.setItem('boxingUserId', state.userId);
-    }
-
-    // 2. הבאת נתונים מהשרת
-    if (API_URL && API_URL.includes('script.google.com')) {
-        fetchStats();
-    }
-
-    // 3. אתחול ממשק
-    updateMuteIcon();
-    app.selectDiff('ROOKIE');
+:root {
+    --bg: #0b0b0b;
+    --card: #141414;
+    --blue: #0099ff;
+    --green: #00ff99;
+    --text: #ffffff;
     
-    // 4. רישום Service Worker (עבור PWA)
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js');
-    }
+    /* צבע דינמי - משתנה לפי המצב */
+    --active-color: var(--blue); 
+}
 
-    // 5. חיבור כפתורים
-    document.getElementById('muteBtn').onclick = toggleMute;
-    document.getElementById('btn-start-fight').onclick = startWorkout;
-    document.getElementById('pauseBtn').onclick = togglePause;
-    document.getElementById('stopBtn').onclick = endWorkout;
-    document.getElementById('btn-restart').onclick = resetApp;
+/* מצב מנוחה/חימום - דורס את הצבע לירוק */
+body.rest-mode {
+    --active-color: var(--green);
+}
+
+body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Assistant', sans-serif; height: 100vh; height: 100dvh; overflow: hidden; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+
+.container {
+    background: linear-gradient(180deg, #181818, #0e0e0e);
+    display: flex; flex-direction: column; padding: 10px 20px;
+    height: 100%; width: 100%; max-width: 1200px; margin: 0 auto;
+}
+
+/* --- HEADER --- */
+.app-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 5px; flex-shrink: 0; }
+.logo-text { font-family: 'Teko'; font-size: 1.5rem; letter-spacing: 2px; color: #444; }
+
+/* הגדלה משמעותית של כפתור ההשתקה */
+.icon-btn { background: none; border: none; color: #666; cursor: pointer; padding: 10px; display: flex; align-items: center; justify-content: center; }
+.icon-btn .material-symbols-outlined { font-size: 4rem; /* הוגדל פי 2 בערך */ transition: color 0.2s; }
+.icon-btn:active { color: var(--active-color); }
+
+/* --- STATS BAR --- */
+.stats-bar { display: flex; gap: 10px; margin-bottom: 10px; flex-shrink: 0; }
+.stat-card { background: #222; flex: 1; padding: 5px 10px; border-radius: 8px; text-align: center; border: 1px solid #333; }
+.stat-val { font-family: 'Teko'; font-size: 1.5rem; line-height: 1; color: var(--active-color); }
+.stat-label { font-size: 0.6rem; color: #888; letter-spacing: 1px; }
+
+/* --- SETUP SCREEN --- */
+#setup-screen { display: flex; flex-direction: column; height: 100%; width: 100%; }
+.dashboard-grid { display: flex; flex: 1; gap: 20px; overflow: hidden; min-height: 0; }
+.setup-col { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 8px; overflow-y: auto; }
+.center-col { align-items: center; border-left: 1px solid #222; border-right: 1px solid #222; }
+
+/* Diff Buttons */
+.diff-btn { border: 1px solid #333; padding: 15px; border-radius: 10px; cursor: pointer; transition: 0.2s; background: rgba(255,255,255,0.02); }
+.diff-btn.active { background: rgba(255, 255, 255, 0.05); border-color: var(--active-color); box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+.diff-title { font-family: 'Teko'; font-size: 2rem; line-height: 1; color: #888; margin: 0; }
+.diff-btn.active .diff-title { color: var(--active-color); }
+.diff-details { font-size: 0.8rem; color: #555; margin-top: 2px; }
+.diff-btn.active .diff-details { color: #fff; }
+
+/* Counter & Setup Fonts */
+.rounds-title { font-family: 'Teko'; font-size: 3.5rem; color: var(--active-color); line-height: 1; margin-bottom: 10px; }
+.counter-controls { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
+.c-btn { width: 60px; height: 60px; border-radius: 50%; background: #222; color: #fff; font-size: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 1px solid #444; }
+.c-btn:active { background: var(--active-color); color: black; border-color: var(--active-color); }
+#setupRoundCount { font-family: 'Teko'; font-size: 6rem; width: 90px; text-align: center; line-height: 1; }
+.info-label { font-family: 'Teko'; color: #666; font-size: 1.2rem; }
+
+/* Start Button */
+.start-container { padding: 10px 0; flex-shrink: 0; }
+.btn-start { background: transparent; border: 2px solid var(--active-color); color: var(--active-color); padding: 12px 0; width: 100%; font-family: 'Teko'; font-size: 2.2rem; border-radius: 50px; cursor: pointer; letter-spacing: 1px; }
+.btn-start:active { background: var(--active-color); color: black; transform: scale(0.98); }
+
+/* --- TIMER SCREEN --- */
+#timer-screen, #finish-screen { display: none; flex-direction: column; height: 100%; }
+.timer-grid { display: flex; flex: 1; align-items: center; width: 100%; }
+.timer-left { flex: 1; text-align: center; display: flex; flex-direction: column; justify-content: center; }
+.timer-right { flex: 1; padding-left: 20px; border-left: 1px solid #333; height: 100%; display: flex; flex-direction: column; justify-content: center; }
+
+/* שעון */
+.main-clock { font-family: 'Teko'; font-size: 30vh; line-height: 0.85; color: var(--active-color); transition: color 0.3s ease; }
+.sub-info { font-family: 'Teko'; font-size: 4vh; color: #888; }
+
+.pattern-box { background: #1a1a1a; padding: 10px 20px; border-left: 8px solid var(--active-color); margin-bottom: 20px; border-radius: 12px; width: 100%; transition: border-color 0.3s ease; }
+.pattern-label { font-size: 0.8rem; color: #666; letter-spacing: 1px; margin-bottom: 5px; text-transform: uppercase; }
+
+/* הקטנה נוספת של הקומבינציות (כ-20-25% פחות) */
+#currentPattern { font-family: 'Teko'; font-size: 13vh; /* הוקטן מ-16vh */ color: white; display: flex; gap: 15px; align-items: center; line-height: 0.9; }
+.next-box { padding-left: 10px; }
+#nextPattern { font-family: 'Teko'; font-size: 5vh; color: #555; display: flex; gap: 10px; align-items: center; }
+#nextPattern .material-symbols-outlined { font-size: 0.7em !important; }
+
+.material-symbols-outlined { vertical-align: middle; font-size: 0.8em !important; }
+
+.timer-controls { display: flex; gap: 20px; justify-content: center; padding: 15px 0; flex-shrink: 0; }
+.btn-control { background: transparent; border: 2px solid #555; color: #fff; padding: 10px 40px; border-radius: 50px; font-family: 'Teko'; font-size: 1.8rem; min-width: 150px; cursor: pointer; }
+.btn-pause { border-color: var(--active-color); color: var(--active-color); }
+.btn-stop { border-color: #ff4444; color: #ff4444; }
+
+/* --- FINISH SCREEN --- */
+#finish-screen { align-items: center; justify-content: center; text-align: center; }
+.finish-title { font-family: 'Teko'; font-size: 15vh; color: var(--green); margin: 0; line-height: 1; }
+.finish-level { font-family: 'Teko'; font-size: 5vh; color: #fff; margin-bottom: 20px; text-transform: uppercase; }
+.finish-stat { background: #222; padding: 15px 40px; border-radius: 16px; border: 1px solid #333; margin-bottom: 30px; }
+.big-num { font-family: 'Teko'; font-size: 10vh; color: var(--active-color); line-height: 1; }
+
+/* ========================================= */
+/* RESPONSIVE LOGIC */
+/* ========================================= */
+
+@media (max-width: 768px) and (orientation: portrait) {
+    .container { padding: 15px; }
+    .dashboard-grid { flex-direction: column; overflow-y: auto; gap: 10px; }
+    .center-col { border: none; padding: 10px 0; border-top: 1px solid #222; border-bottom: 1px solid #222; flex: 0 0 auto; }
+    .setup-col { overflow: visible; }
     
-    document.getElementById('btn-minus').onclick = () => changeRounds(-1);
-    document.getElementById('btn-plus').onclick = () => changeRounds(1);
-});
+    .rounds-title { font-size: 2.5rem; }
+    #setupRoundCount { font-size: 4rem; }
 
-// --- APP LOGIC ---
-
-const app = {
-    selectDiff: (lvl) => {
-        state.level = lvl;
-        // עדכון כפתורים
-        document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(`btn-${lvl.toLowerCase()}`).classList.add('active');
-        updateTotalTimePreview();
-    }
-};
-
-function changeRounds(delta) {
-    state.targetRounds = Math.max(1, state.targetRounds + delta);
-    document.getElementById('setupRoundCount').innerText = state.targetRounds;
-    updateTotalTimePreview();
-}
-
-function updateTotalTimePreview() {
-    const total = calculateTotalTime();
-    document.getElementById('totalTimePreview').innerText = formatTime(total);
-}
-
-function calculateTotalTime() {
-    const cfg = CONFIG[state.level];
-    // זמן = חימום (60) + (מספר סיבובים * זמן סיבוב) + (מספר מנוחות * זמן מנוחה)
-    return 60 + (state.targetRounds * cfg.round) + ((state.targetRounds - 1) * cfg.rest);
-}
-
-// --- WORKOUT ENGINE ---
-
-function startWorkout() {
-    // אתחול משתנים לאימון חדש
-    state.phase = 'warmup';
-    state.currentRound = 0;
-    state.timeLeft = 60; // דקה חימום
-    state.workSeconds = 0;
-    state.totalTime = calculateTotalTime();
+    .timer-grid { flex-direction: column; justify-content: center; }
+    .timer-left { flex: 0 0 auto; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #222; width: 100%; }
+    .timer-right { border-left: none; padding-left: 0; width: 100%; justify-content: flex-start; }
     
-    // הכנת חפיסת הקלפים (ערבוב ראשוני)
-    state.deck = [...COMBOS.pool].sort(() => Math.random() - 0.5);
+    .main-clock { font-size: 18vh; } 
+    #currentPattern { font-size: 8vh; justify-content: center; }
+    .pattern-box { text-align: center; }
+    .next-box { text-align: center; }
+    #nextPattern { justify-content: center; }
+}
 
-    // החלפת מסכים
-    document.getElementById('setup-screen').style.display = 'none';
-    document.getElementById('timer-screen').style.display = 'flex';
+@media (max-width: 900px) and (orientation: landscape) {
+    .container { padding: 5px 20px; }
+    .app-header { display: none; } 
+    .stats-bar { display: none; } 
     
-    // מניעת כיבוי מסך
-    requestWakeLock();
+    .dashboard-grid { align-items: center; }
     
-    playSound('bell');
-    
-    // התחלת הטיימר
-    if (state.timer) clearInterval(state.timer);
-    state.timer = setInterval(tick, 1000);
-    updateTimerUI();
-}
-
-function tick() {
-    // אם מושהה - לא עושים כלום
-    if (document.getElementById('pauseBtn').innerText === "RESUME") return;
-
-    state.timeLeft--;
-    state.totalTime--;
-    
-    if (state.phase === 'work') {
-        state.workSeconds++;
-        // צליל בכל דקה עגולה (למעט כשהזמן נגמר)
-        if (state.timeLeft > 0 && state.timeLeft % 60 === 0) playSound('minute');
-    }
-
-    // בדיקה אם נגמר הזמן לשלב הנוכחי
-    if (state.timeLeft <= 0) {
-        handlePhaseChange();
-    }
-    
-    // צליל ספירה לאחור (ב-10 שניות אחרונות)
-    if (state.timeLeft === 10) playSound('countdown');
-
-    updateTimerUI();
-}
-
-function handlePhaseChange() {
-    playSound('bell');
-    const cfg = CONFIG[state.level];
-
-    if (state.phase === 'warmup') {
-        // מעבר מחימום לסיבוב 1
-        state.phase = 'work';
-        state.currentRound = 1;
-        state.timeLeft = cfg.round;
-
-    } else if (state.phase === 'work') {
-        // סיימנו סיבוב עבודה
-        if (state.currentRound >= state.targetRounds) {
-            finishSession();
-            return;
-        }
-        // מעבר למנוחה
-        state.phase = 'rest';
-        state.timeLeft = cfg.rest;
-
-    } else if (state.phase === 'rest') {
-        // סיימנו מנוחה, מתחילים סיבוב חדש
-        state.phase = 'work';
-        state.currentRound++;
-        state.timeLeft = cfg.round;
-    }
-}
-
-// --- SMART COMBO LOGIC (Deck of Cards) ---
-function getCurrentCombo() {
-    // שלב א': 3 דקות ראשונות (180 שניות)
-    if (state.workSeconds < 180) {
-        // מחליף כל 20 שניות
-        const idx = Math.floor((state.workSeconds % 60) / 20); 
-        return COMBOS.fixed[idx % 3];
-    }
-    
-    // שלב ב': רנדומלי חכם
-    // מחליף כל 15 שניות
-    const intervalIndex = Math.floor((state.workSeconds - 180) / 15);
-    
-    // אם נגמרה החפיסה - מערבבים מחדש
-    if (state.deck.length === 0) {
-        state.deck = [...COMBOS.pool].sort(() => Math.random() - 0.5);
-    }
-    
-    // שליפת הקלף הבא (באמצעות מודולו על גודל החפיסה)
-    const cardIndex = intervalIndex % state.deck.length;
-    
-    // זיהוי סיום סיבוב חפיסה לערבוב הבא
-    if (cardIndex === 0 && intervalIndex > 0 && intervalIndex % state.deck.length === 0) {
-         state.deck = [...COMBOS.pool].sort(() => Math.random() - 0.5);
-    }
-    
-    return state.deck[cardIndex];
-}
-
-// --- UI UPDATE ---
-function updateTimerUI() {
-    document.getElementById('mainTimer').innerText = formatTime(state.timeLeft);
-    document.getElementById('totalTimer').innerText = formatTime(state.totalTime);
-    
-    const status = document.getElementById('statusText');
-    const body = document.body; // גישה ל-body לשינוי צבעים
-
-    if (state.phase === 'work') {
-        // מצב עבודה (כחול)
-        body.classList.remove('rest-mode');
-        
-        status.innerText = `ROUND ${state.currentRound}`;
-        
-        // הצגת הקומבינציה
-        const combo = parseIcons(getCurrentCombo());
-        document.getElementById('currentPattern').innerHTML = combo;
-        document.getElementById('nextPattern').innerText = "..."; // אופציונלי: אפשר להציג את הבא
-        
-    } else {
-        // מצב מנוחה/חימום (ירוק)
-        body.classList.add('rest-mode');
-        
-        status.innerText = state.phase === 'warmup' ? "WARM UP" : "REST";
-        document.getElementById('currentPattern').innerText = "BREATHE";
-        
-        // הודעה לקראת הסיבוב הבא
-        if (state.phase === 'rest') {
-            document.getElementById('nextPattern').innerText = `NEXT: ROUND ${state.currentRound + 1}`;
-        } else {
-            document.getElementById('nextPattern').innerText = "GET READY";
-        }
-    }
-}
-
-// --- DATA & SYNC ---
-
-function finishSession() {
-    clearInterval(state.timer);
-    if (state.wakeLock) state.wakeLock.release();
-
-    // בדיקה האם האימון היה מעל 10 דקות (בערך)
-    const totalDurationMin = Math.round(state.workSeconds / 60); 
-    
-    // לוגיקה: אם עשינו לפחות 5 דקות עבודה נטו, נשמור (לצורך הטסטים שלך כרגע)
-    // בפועל, בקוד הסופי אפשר לשנות ל-10
-    if (totalDurationMin >= 1) { 
-        logWorkout(totalDurationMin);
-    }
-
-    // מעבר למסך סיום
-    document.getElementById('timer-screen').style.display = 'none';
-    document.getElementById('finish-screen').style.display = 'flex';
-    document.getElementById('finishRoundsVal').innerText = state.targetRounds;
-}
-
-function logWorkout(mins) {
-    if (!API_URL.includes('http')) return;
-    // שליחת נתונים ("Fire and Forget")
-    const url = `${API_URL}?action=logWorkout&userId=${state.userId}&difficulty=${state.level}&rounds=${state.targetRounds}&duration=${mins}`;
-    fetch(url, { mode: 'no-cors' }).catch(e => console.log('Save failed', e));
-}
-
-function fetchStats() {
-    if (!API_URL.includes('http')) return;
-    const url = `${API_URL}?action=getStats&userId=${state.userId}`;
-    
-    fetch(url)
-        .then(r => r.json())
-        .then(data => {
-            if(data.status === 'error') return;
-            // עדכון ה-UI עם הנתונים
-            document.getElementById('stat-weekly').innerText = data.workoutsPerWeek || 0;
-            document.getElementById('stat-duration').innerText = data.avgDuration || 0;
-            document.getElementById('stat-level').innerText = data.avgLevel || '-';
-        })
-        .catch(e => console.log('Offline or API Error'));
-}
-
-// --- HELPER FUNCTIONS ---
-
-function toggleMute() {
-    state.isMuted = !state.isMuted;
-    localStorage.setItem('boxingMuted', state.isMuted);
-    updateMuteIcon();
-}
-
-function updateMuteIcon() {
-    const icon = document.querySelector('#muteBtn span');
-    icon.innerText = state.isMuted ? 'volume_off' : 'volume_up';
-    icon.style.opacity = state.isMuted ? '0.5' : '1';
-}
-
-function playSound(name) {
-    if (!state.isMuted && SOUNDS[name]) {
-        SOUNDS[name].currentTime = 0;
-        SOUNDS[name].play().catch(e => {}); // Catch play errors (user didn't interact yet)
-    }
-}
-
-function parseIcons(text) {
-    if(!text) return '';
-    return text.replace(/▲/g,'<span class="material-symbols-outlined">keyboard_double_arrow_up</span>')
-               .replace(/▼/g,'<span class="material-symbols-outlined">keyboard_double_arrow_down</span>')
-               .replace(/◄/g,'<span class="material-symbols-outlined">keyboard_double_arrow_left</span>')
-               .replace(/►/g,'<span class="material-symbols-outlined">keyboard_double_arrow_right</span>');
-}
-
-function formatTime(s) {
-    if (s < 0) s = 0;
-    const m = Math.floor(s / 60);
-    const sec = s % 60;
-    return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
-}
-
-async function requestWakeLock() {
-    if ('wakeLock' in navigator) {
-        try { state.wakeLock = await navigator.wakeLock.request('screen'); } catch(e){}
-    }
-}
-
-function togglePause() {
-    const btn = document.getElementById('pauseBtn');
-    if (btn.innerText === "PAUSE") {
-        btn.innerText = "RESUME";
-        state.isMuted = true; // אופציונלי: השתקה בזמן פוז
-    } else {
-        btn.innerText = "PAUSE";
-        state.isMuted = localStorage.getItem('boxingMuted') === 'true'; // שחזור מצב
-    }
-}
-
-function endWorkout() {
-    finishSession(); 
-}
-
-function resetApp() {
-    location.reload();
+    .main-clock { font-size: 35vh; } 
+    #currentPattern { font-size: 15vh; } /* הותאם */
+    .btn-start { padding: 5px 0; font-size: 1.8rem; }
 }
