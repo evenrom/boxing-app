@@ -4,12 +4,9 @@
     --blue: #0099ff;
     --green: #00ff99;
     --text: #ffffff;
-    
-    /* צבע דינמי - משתנה לפי המצב */
     --active-color: var(--blue); 
 }
 
-/* מצב מנוחה/חימום - דורס את הצבע לירוק */
 body.rest-mode {
     --active-color: var(--green);
 }
@@ -27,10 +24,13 @@ body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Assis
 .app-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 5px; flex-shrink: 0; }
 .logo-text { font-family: 'Teko'; font-size: 1.5rem; letter-spacing: 2px; color: #444; }
 
-/* הגדלה משמעותית של כפתור ההשתקה */
-.icon-btn { background: none; border: none; color: #666; cursor: pointer; padding: 10px; display: flex; align-items: center; justify-content: center; }
-.icon-btn .material-symbols-outlined { font-size: 4rem; /* הוגדל פי 2 בערך */ transition: color 0.2s; }
-.icon-btn:active { color: var(--active-color); }
+/* FIX: Huge Mute Icon */
+.icon-btn { background: none; border: none; color: #666; cursor: pointer; padding: 15px; display: flex; align-items: center; justify-content: center; }
+.icon-btn .material-symbols-outlined { 
+    font-size: 3.5rem !important; /* הוגדל משמעותית */
+    transition: color 0.2s; 
+}
+.icon-btn:active { color: var(--active-color); transform: scale(0.95); }
 
 /* --- STATS BAR --- */
 .stats-bar { display: flex; gap: 10px; margin-bottom: 10px; flex-shrink: 0; }
@@ -78,13 +78,12 @@ body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Assis
 .pattern-box { background: #1a1a1a; padding: 10px 20px; border-left: 8px solid var(--active-color); margin-bottom: 20px; border-radius: 12px; width: 100%; transition: border-color 0.3s ease; }
 .pattern-label { font-size: 0.8rem; color: #666; letter-spacing: 1px; margin-bottom: 5px; text-transform: uppercase; }
 
-/* הקטנה נוספת של הקומבינציות (כ-20-25% פחות) */
-#currentPattern { font-family: 'Teko'; font-size: 13vh; /* הוקטן מ-16vh */ color: white; display: flex; gap: 15px; align-items: center; line-height: 0.9; }
+#currentPattern { font-family: 'Teko'; font-size: 13vh; color: white; display: flex; gap: 15px; align-items: center; line-height: 0.9; }
 .next-box { padding-left: 10px; }
 #nextPattern { font-family: 'Teko'; font-size: 5vh; color: #555; display: flex; gap: 10px; align-items: center; }
 #nextPattern .material-symbols-outlined { font-size: 0.7em !important; }
 
-.material-symbols-outlined { vertical-align: middle; font-size: 0.8em !important; }
+.material-symbols-outlined { vertical-align: middle; }
 
 .timer-controls { display: flex; gap: 20px; justify-content: center; padding: 15px 0; flex-shrink: 0; }
 .btn-control { background: transparent; border: 2px solid #555; color: #fff; padding: 10px 40px; border-radius: 50px; font-family: 'Teko'; font-size: 1.8rem; min-width: 150px; cursor: pointer; }
@@ -98,38 +97,29 @@ body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Assis
 .finish-stat { background: #222; padding: 15px 40px; border-radius: 16px; border: 1px solid #333; margin-bottom: 30px; }
 .big-num { font-family: 'Teko'; font-size: 10vh; color: var(--active-color); line-height: 1; }
 
-/* ========================================= */
-/* RESPONSIVE LOGIC */
-/* ========================================= */
-
+/* RESPONSIVE */
 @media (max-width: 768px) and (orientation: portrait) {
     .container { padding: 15px; }
     .dashboard-grid { flex-direction: column; overflow-y: auto; gap: 10px; }
     .center-col { border: none; padding: 10px 0; border-top: 1px solid #222; border-bottom: 1px solid #222; flex: 0 0 auto; }
     .setup-col { overflow: visible; }
-    
     .rounds-title { font-size: 2.5rem; }
     #setupRoundCount { font-size: 4rem; }
-
     .timer-grid { flex-direction: column; justify-content: center; }
     .timer-left { flex: 0 0 auto; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #222; width: 100%; }
     .timer-right { border-left: none; padding-left: 0; width: 100%; justify-content: flex-start; }
-    
     .main-clock { font-size: 18vh; } 
     #currentPattern { font-size: 8vh; justify-content: center; }
     .pattern-box { text-align: center; }
     .next-box { text-align: center; }
     #nextPattern { justify-content: center; }
 }
-
 @media (max-width: 900px) and (orientation: landscape) {
     .container { padding: 5px 20px; }
     .app-header { display: none; } 
     .stats-bar { display: none; } 
-    
     .dashboard-grid { align-items: center; }
-    
     .main-clock { font-size: 35vh; } 
-    #currentPattern { font-size: 15vh; } /* הותאם */
+    #currentPattern { font-size: 15vh; }
     .btn-start { padding: 5px 0; font-size: 1.8rem; }
 }
