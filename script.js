@@ -1,6 +1,6 @@
 // --- CONFIGURATION ---
-// החלף את השורה למטה בכתובת ה-URL שקיבלת מגוגל סקריפט
-const API_URL = "INSERT_YOUR_GOOGLE_SCRIPT_URL_HERE";
+// IMPORTANT: Replace with your actual Web App URL
+const API_URL = "https://script.google.com/macros/s/AKfycbynhdDZ9-8Ms-hNys8mxYRmUKd5NkkpcoV9zCHHwaTcAAFARRg_LGkBguKVaKPxXoQb/exec";
 
 // --- AUDIO ASSETS ---
 const SOUNDS = {
@@ -9,14 +9,14 @@ const SOUNDS = {
     countdown: new Audio('https://github.com/evenrom/boxing-timer-assets/raw/refs/heads/main/countdown.mp3')
 };
 
-// --- DIFFICULTY SETTINGS ---
+// --- DIFFICULTY SETTINGS (FIXED ROUNDS) ---
 const CONFIG = {
-    'ROOKIE': { round: 180, rest: 20 },
-    'PRO':    { round: 300, rest: 30 },
-    'CHAMP':  { round: 600, rest: 60 }
+    'ROOKIE': { round: 180, rest: 20, defaultRounds: 8 },
+    'PRO':    { round: 300, rest: 30, defaultRounds: 6 },
+    'CHAMP':  { round: 600, rest: 60, defaultRounds: 4 }
 };
 
-// --- ORIGINAL COMBOS SOURCE (Order 1-10) ---
+// --- ORIGINAL COMBOS SOURCE ---
 const PATTERNS_SOURCE = {
     1: ["1","1-2","1-2-3"],
     2: ["1 ▲ 1","1-2-7-2","2-4"],
@@ -32,8 +32,8 @@ const PATTERNS_SOURCE = {
 
 // --- STATE MANAGEMENT ---
 let state = {
-    level: 'ROOKIE',
-    targetRounds: 8,
+    level: 'PRO', // FIX: Default to PRO
+    targetRounds: 6, // FIX: Default matches PRO
     isMuted: localStorage.getItem('boxingMuted') === 'true',
     userId: localStorage.getItem('boxingUserId'),
     phase: 'setup',
@@ -41,7 +41,7 @@ let state = {
     totalTime: 0,
     currentRound: 0,
     workSeconds: 0,
-    playlist: [], // הרשימה השטוחה של כל התרגילים לפי הסדר
+    playlist: [], 
     timer: null,
     wakeLock: null
 };
@@ -52,21 +52,29 @@ document.addEventListener('DOMContentLoaded', () => {
         state.userId = crypto.randomUUID();
         localStorage.setItem('boxingUserId', state.userId);
     }
+    console.log("Current User ID:", state.userId); // Debug Log
 
-    // בניית הפלייליסט הלינארי מהמאגר המקורי
     buildPlaylist();
 
     if (API_URL && API_URL.includes('script.google.com')) {
         fetchStats();
+    } else {
+        console.warn("API URL not set in script.js");
     }
 
     updateMuteIcon();
-    app.selectDiff('ROOKIE');
     
+    // FIX: Initialize with PRO
+    app.selectDiff('PRO'); 
+    
+    // Service Worker Registration
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js');
+        navigator.serviceWorker.register('./sw.js')
+            .then(reg => console.log('SW Registered', reg))
+            .catch(err => console.log('SW Failed', err));
     }
 
+    // Event Listeners
     document.getElementById('muteBtn').onclick = toggleMute;
     document.getElementById('btn-start-fight').onclick = startWorkout;
     document.getElementById('pauseBtn').onclick = togglePause;
@@ -76,10 +84,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-plus').onclick = () => changeRounds(1);
 });
 
-// פונקציה לבניית רשימה אחת ארוכה של תרגילים לפי הסדר
 function buildPlaylist() {
     state.playlist = [];
-    // עוברים על כל הקבוצות (1 עד 10) ומוסיפים לרשימה אחת
     for (let i = 1; i <= 10; i++) {
         if (PATTERNS_SOURCE[i]) {
             state.playlist.push(...PATTERNS_SOURCE[i]);
@@ -88,12 +94,17 @@ function buildPlaylist() {
 }
 
 // --- APP LOGIC ---
-
 const app = {
     selectDiff: (lvl) => {
         state.level = lvl;
+        // Update active button
         document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
         document.getElementById(`btn-${lvl.toLowerCase()}`).classList.add('active');
+        
+        // FIX: Set rounds based on difficulty default
+        state.targetRounds = CONFIG[lvl].defaultRounds;
+        document.getElementById('setupRoundCount').innerText = state.targetRounds;
+        
         updateTotalTimePreview();
     }
 };
@@ -115,7 +126,6 @@ function calculateTotalTime() {
 }
 
 // --- WORKOUT ENGINE ---
-
 function startWorkout() {
     state.phase = 'warmup';
     state.currentRound = 0;
@@ -176,7 +186,6 @@ function handlePhaseChange() {
     }
 }
 
-// --- UI UPDATE (With Logic for Next Up) ---
 function updateTimerUI() {
     document.getElementById('mainTimer').innerText = formatTime(state.timeLeft);
     document.getElementById('totalTimer').innerText = formatTime(state.totalTime);
@@ -188,12 +197,8 @@ function updateTimerUI() {
         body.classList.remove('rest-mode');
         status.innerText = `ROUND ${state.currentRound}`;
         
-        // לוגיקה לבחירת תרגיל: מחליפים כל 15 שניות
-        // אנו משתמשים ב-workSeconds כדי לרוץ על הפלייליסט באופן קבוע
-        const intervalDuration = 15; // שניות לכל תרגיל
+        const intervalDuration = 15; 
         const totalIndex = Math.floor(state.workSeconds / intervalDuration);
-        
-        // שימוש ב-Modulo (%) כדי לחזור להתחלה אם נגמרה הרשימה
         const currentIndex = totalIndex % state.playlist.length;
         const nextIndex = (totalIndex + 1) % state.playlist.length;
 
@@ -201,8 +206,6 @@ function updateTimerUI() {
         const nextCombo = state.playlist[nextIndex];
 
         document.getElementById('currentPattern').innerHTML = parseIcons(currentCombo);
-        
-        // כעת אנו יודעים בוודאות מה הבא בתור
         document.getElementById('nextPattern').innerHTML = parseIcons(nextCombo);
         
     } else {
@@ -219,7 +222,6 @@ function updateTimerUI() {
 }
 
 // --- DATA & SYNC ---
-
 function finishSession() {
     clearInterval(state.timer);
     if (state.wakeLock) state.wakeLock.release();
@@ -237,25 +239,30 @@ function finishSession() {
 function logWorkout(mins) {
     if (!API_URL.includes('http')) return;
     const url = `${API_URL}?action=logWorkout&userId=${state.userId}&difficulty=${state.level}&rounds=${state.targetRounds}&duration=${mins}`;
-    fetch(url, { mode: 'no-cors' }).catch(e => console.log('Save failed', e));
+    
+    // Using no-cors mode for simple logging
+    fetch(url, { mode: 'no-cors' })
+        .then(() => console.log('Workout Logged'))
+        .catch(e => console.error('Save failed', e));
 }
 
 function fetchStats() {
     if (!API_URL.includes('http')) return;
     const url = `${API_URL}?action=getStats&userId=${state.userId}`;
+    
     fetch(url)
         .then(r => r.json())
         .then(data => {
+            console.log("Stats received:", data);
             if(data.status === 'error') return;
             document.getElementById('stat-weekly').innerText = data.workoutsPerWeek || 0;
             document.getElementById('stat-duration').innerText = data.avgDuration || 0;
             document.getElementById('stat-level').innerText = data.avgLevel || '-';
         })
-        .catch(e => console.log('Offline'));
+        .catch(e => console.log('Stats fetch error:', e));
 }
 
 // --- HELPERS ---
-
 function toggleMute() {
     state.isMuted = !state.isMuted;
     localStorage.setItem('boxingMuted', state.isMuted);
@@ -278,9 +285,9 @@ function playSound(name) {
 function parseIcons(text) {
     if(!text) return '';
     return text.replace(/▲/g,'<span class="material-symbols-outlined">keyboard_double_arrow_up</span>')
-               .replace(/▼/g,'<span class="material-symbols-outlined">keyboard_double_arrow_down</span>')
-               .replace(/◄/g,'<span class="material-symbols-outlined">keyboard_double_arrow_left</span>')
-               .replace(/►/g,'<span class="material-symbols-outlined">keyboard_double_arrow_right</span>');
+                .replace(/▼/g,'<span class="material-symbols-outlined">keyboard_double_arrow_down</span>')
+                .replace(/◄/g,'<span class="material-symbols-outlined">keyboard_double_arrow_left</span>')
+                .replace(/►/g,'<span class="material-symbols-outlined">keyboard_double_arrow_right</span>');
 }
 
 function formatTime(s) {
