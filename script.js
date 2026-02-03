@@ -210,14 +210,16 @@ function updateTimerUI() {
 // Lógica Update: Fixed order, Loop back, Change every 60s
         const intervalDuration = 60; 
         
-        // Calculate index strictly based on time elapsed
-        // Modulo operator (%) ensures it loops back to start (1) when list ends
-        const totalIndex = Math.floor(state.workSeconds / intervalDuration);
-        const currentIndex = totalIndex % state.playlist.length;
-        const nextIndex = (currentIndex + 1) % state.playlist.length;
+// Calculate index strictly based on time elapsed
+       // Modulo operator (%) ensures it loops back to start (1) when list ends
+       const totalIndex = Math.floor(state.workSeconds / intervalDuration);
+       
+       // FIX: Pointing to WORKOUT_PLAN instead of empty state.playlist
+       const currentIndex = totalIndex % WORKOUT_PLAN.length;
+       const nextIndex = (currentIndex + 1) % WORKOUT_PLAN.length;
 
-        const currentCombo = state.playlist[currentIndex];
-        const nextCombo = state.playlist[nextIndex];
+       const currentCombo = WORKOUT_PLAN[currentIndex];
+       const nextCombo = WORKOUT_PLAN[nextIndex];
 
         document.getElementById('currentPattern').innerHTML = parseIcons(currentCombo);
         document.getElementById('nextPattern').innerHTML = parseIcons(nextCombo);
