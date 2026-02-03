@@ -16,19 +16,40 @@ const CONFIG = {
     'CHAMP':  { round: 600, rest: 60, defaultRounds: 4 }
 };
 
-// --- ORIGINAL COMBOS SOURCE ---
-const PATTERNS_SOURCE = {
-    1: ["1","1-2","1-2-3"],
-    2: ["1 ▲ 1","1-2-7-2","2-4"],
-    3: ["1-1-2","1-4 ► 2","1-2-3"],
-    4: ["1-2-7-3","1 ◄ 1-2","1-3-7-3"],
-    5: ["2-4 ◄ 4","1-2-7-2","1-2 ▲ 3"],
-    6: ["1-2-7-4-2","2 ▲ 4-4","1 ▲ 3-3"],
-    7: ["1-3-7-4","2-4-7-3","1 ► 2-2"],
-    8: ["1-2-1-2-1-2","3-4-3-4-3-4","5-6-5-6-5-6"],
-    9: ["1 ► 2-4","1-7-3","2-7-4"],
-    10: ["1 ▲ 1-2-7-2","2-4-7-2-4","1-2-3-7-2"]
-};
+// --- WORKOUT PLAN (FLAT SEQUENCE) ---
+// Each line = 60 Seconds of work
+const WORKOUT_PLAN = [
+    "1",
+    "1-2",
+    "1-2-3",
+    "1 ▲ 1",
+    "1-2-7-2",
+    "2-4",
+    "1-1-2",
+    "1-2 ► 4",
+    "1-3",
+    "1-2-7-3",
+    "1 ◄ 1-2",
+    "1-3-7-3",
+    "2-4-7-4",
+    "1-2-7-2",
+    "1-2 ▲ 3",
+    "1-2-7-4-2",
+    "2 ▲ 4-4",
+    "1 ▲ 3-3",
+    "1-3-7-3",
+    "2-4-7-4",
+    "1 ► 2-2",
+    "1-2-1-2-1-2",
+    "3-4-3-4-3-4",
+    "2 ► 1-3",
+    "1 ► 2-4",
+    "1-7-3",
+    "2-7-4",
+    "1 ▲ 1-2-7-2",
+    "2-4-7-2-4",
+    "1-2-3-7-2"
+];
 
 // --- STATE MANAGEMENT ---
 let state = {
@@ -53,8 +74,6 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('boxingUserId', state.userId);
     }
     console.log("Current User ID:", state.userId); // Debug Log
-
-    buildPlaylist();
 
     if (API_URL && API_URL.includes('script.google.com')) {
         fetchStats();
@@ -83,15 +102,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-minus').onclick = () => changeRounds(-1);
     document.getElementById('btn-plus').onclick = () => changeRounds(1);
 });
-
-function buildPlaylist() {
-    state.playlist = [];
-    for (let i = 1; i <= 10; i++) {
-        if (PATTERNS_SOURCE[i]) {
-            state.playlist.push(...PATTERNS_SOURCE[i]);
-        }
-    }
-}
 
 // --- APP LOGIC ---
 const app = {
@@ -197,10 +207,14 @@ function updateTimerUI() {
         body.classList.remove('rest-mode');
         status.innerText = `ROUND ${state.currentRound}`;
         
-        const intervalDuration = 15; 
+// Lógica Update: Fixed order, Loop back, Change every 60s
+        const intervalDuration = 60; 
+        
+        // Calculate index strictly based on time elapsed
+        // Modulo operator (%) ensures it loops back to start (1) when list ends
         const totalIndex = Math.floor(state.workSeconds / intervalDuration);
         const currentIndex = totalIndex % state.playlist.length;
-        const nextIndex = (totalIndex + 1) % state.playlist.length;
+        const nextIndex = (currentIndex + 1) % state.playlist.length;
 
         const currentCombo = state.playlist[currentIndex];
         const nextCombo = state.playlist[nextIndex];
