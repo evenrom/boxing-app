@@ -23,105 +23,95 @@
 
 <div class="h-full w-full max-w-[1200px] mx-auto flex flex-col p-4 bg-gradient-to-b from-[#181818] to-[#0e0e0e] relative">
     
-    <!-- HEADER -->
-    <div class="flex items-center justify-between pb-2 shrink-0 border-b border-[#222]">
-        <button id="muteBtn" class="text-gray-400 p-2 hover:text-[var(--theme-accent)] transition-colors active:scale-95 flex items-center justify-center">
+    <div class="flex items-center justify-between pb-2 border-b border-[#222] shrink-0">
+        <button id="muteBtn" class="p-3 text-gray-400 hover:text-[var(--theme-accent)] transition-colors active:scale-95">
             <span class="material-symbols-outlined text-[2.6rem]">volume_up</span>
         </button>
-        <div class="font-['Teko'] text-3xl font-bold tracking-[2px] text-center flex-1 pr-10">BOXING COUNTDOWN</div>
-        <div class="flex gap-2">
-            <div class="text-center bg-[#222] px-3 py-1 rounded-lg border border-[#333] min-w-[60px]">
-                <div class="font-['Teko'] text-2xl leading-none text-[var(--theme-accent)] transition-colors" id="stat-weekly">--</div>
-                <div class="text-[0.6rem] text-[#888] tracking-wider mt-1">WEEKLY</div>
+        <div class="font-['Teko'] text-3xl tracking-[4px] font-bold text-center flex-1 pr-12">BOXING COUNTDOWN</div>
+    </div>
+
+    <div id="setup-screen" class="flex flex-col flex-1 min-h-0 container-view">
+        <div class="flex gap-3 my-4 shrink-0">
+            <div class="flex-1 bg-[#141414] border border-[#333] rounded-lg p-2 text-center">
+                <div id="stat-weekly" class="font-['Teko'] text-2xl text-[var(--theme-accent)] line-height-1">--</div>
+                <div class="text-[10px] text-gray-500 tracking-wider uppercase">WEEKLY</div>
             </div>
-            <div class="text-center bg-[#222] px-3 py-1 rounded-lg border border-[#333] min-w-[60px]">
-                <div class="font-['Teko'] text-2xl leading-none text-[var(--theme-accent)] transition-colors" id="stat-duration">--</div>
-                <div class="text-[0.6rem] text-[#888] tracking-wider mt-1">AVG MIN</div>
+            <div class="flex-1 bg-[#141414] border border-[#333] rounded-lg p-2 text-center">
+                <div id="stat-duration" class="font-['Teko'] text-2xl text-[var(--theme-accent)] line-height-1">--</div>
+                <div class="text-[10px] text-gray-500 tracking-wider uppercase">AVG MIN</div>
             </div>
-            <div class="text-center bg-[#222] px-3 py-1 rounded-lg border border-[#333] min-w-[60px]">
-                <div class="font-['Teko'] text-2xl leading-none text-[var(--theme-accent)] transition-colors" id="stat-level">--</div>
-                <div class="text-[0.6rem] text-[#888] tracking-wider mt-1">LEVEL</div>
+            <div class="flex-1 bg-[#141414] border border-[#333] rounded-lg p-2 text-center">
+                <div id="stat-level" class="font-['Teko'] text-2xl text-[var(--theme-accent)] line-height-1">--</div>
+                <div class="text-[10px] text-gray-500 tracking-wider uppercase">LEVEL</div>
             </div>
+        </div>
+
+        <div class="flex flex-1 gap-6 min-h-0 items-center">
+            <div class="flex-1 flex flex-col gap-3 justify-center">
+                <div id="btn-rookie" class="diff-btn border border-[#333] p-4 rounded-xl cursor-pointer bg-white/5 transition-all" onclick="app.selectDiff('ROOKIE')">
+                    <div class="font-['Teko'] text-2xl tracking-wide text-gray-400">ROOKIE</div>
+                    <div class="text-xs text-gray-500">3 MIN • 20 SEC REST</div>
+                </div>
+                <div id="btn-pro" class="diff-btn border border-[#333] p-4 rounded-xl cursor-pointer bg-white/5 transition-all" onclick="app.selectDiff('PRO')">
+                    <div class="font-['Teko'] text-2xl tracking-wide text-gray-400">PRO</div>
+                    <div class="text-xs text-gray-500">5 MIN • 30 SEC REST</div>
+                </div>
+                <div id="btn-champ" class="diff-btn border border-[#333] p-4 rounded-xl cursor-pointer bg-white/5 transition-all" onclick="app.selectDiff('CHAMP')">
+                    <div class="font-['Teko'] text-2xl tracking-wide text-gray-400">CHAMP</div>
+                    <div class="text-xs text-gray-500">10 MIN • 60 SEC REST</div>
+                </div>
+            </div>
+
+            <div class="flex-1 flex flex-col items-center justify-center border-l border-r border-[#222] h-4/5 px-4">
+                <div class="font-['Teko'] text-3xl text-[var(--theme-accent)] tracking-wider">ROUNDS</div>
+                <div class="flex items-center gap-6 my-4">
+                    <div id="btn-minus" class="w-14 h-14 rounded-full bg-[#222] border border-[#444] text-2xl flex items-center justify-center cursor-pointer active:bg-[var(--theme-accent)] active:text-black transition-colors">−</div>
+                    <span id="setupRoundCount" class="font-['Teko'] text-7xl w-24 text-center select-none">8</span>
+                    <div id="btn-plus" class="w-14 h-14 rounded-full bg-[#222] border border-[#444] text-2xl flex items-center justify-center cursor-pointer active:bg-[var(--theme-accent)] active:text-black transition-colors">+</div>
+                </div>
+                <div class="font-['Teko'] text-xl text-gray-500 tracking-wider">TOTAL TIME: <span id="totalTimePreview" class="text-white">--:--</span></div>
+            </div>
+        </div>
+
+        <div class="pt-4 shrink-0">
+            <button id="btn-start-fight" class="w-full py-3 border-2 border-[var(--theme-accent)] text-[var(--theme-accent)] hover:bg-[var(--theme-accent)] hover:text-black font-['Teko'] text-3xl rounded-full tracking-widest transition-all active:scale-[0.99]">START FIGHT</button>
         </div>
     </div>
 
-    <!-- SETUP SCREEN -->
-    <div id="setup-screen" class="flex flex-col flex-1 min-h-0 pt-4">
-        <div class="grid grid-cols-2 flex-1 gap-8 min-h-0">
-            <!-- Left Half -->
-            <div class="flex flex-col justify-center gap-3 overflow-y-auto pr-4">
-                <div class="diff-btn cursor-pointer border border-[#333] p-4 rounded-xl transition-all bg-white/5 [&.active]:bg-white/10 [&.active]:border-[var(--theme-accent)] [&.active]:shadow-[0_0_10px_rgba(0,0,0,0.5)]" id="btn-rookie" onclick="app.selectDiff('ROOKIE')">
-                    <div class="font-['Teko'] text-4xl leading-none text-[#888] [.active_&]:text-[var(--theme-accent)] transition-colors">ROOKIE</div>
-                    <div class="text-sm text-[#555] mt-1 [.active_&]:text-white transition-colors">3 MIN • 20 SEC REST</div>
-                </div>
-                <div class="diff-btn cursor-pointer border border-[#333] p-4 rounded-xl transition-all bg-white/5 [&.active]:bg-white/10 [&.active]:border-[var(--theme-accent)] [&.active]:shadow-[0_0_10px_rgba(0,0,0,0.5)]" id="btn-pro" onclick="app.selectDiff('PRO')">
-                    <div class="font-['Teko'] text-4xl leading-none text-[#888] [.active_&]:text-[var(--theme-accent)] transition-colors">PRO</div>
-                    <div class="text-sm text-[#555] mt-1 [.active_&]:text-white transition-colors">5 MIN • 30 SEC REST</div>
-                </div>
-                <div class="diff-btn cursor-pointer border border-[#333] p-4 rounded-xl transition-all bg-white/5 [&.active]:bg-white/10 [&.active]:border-[var(--theme-accent)] [&.active]:shadow-[0_0_10px_rgba(0,0,0,0.5)]" id="btn-champ" onclick="app.selectDiff('CHAMP')">
-                    <div class="font-['Teko'] text-4xl leading-none text-[#888] [.active_&]:text-[var(--theme-accent)] transition-colors">CHAMP</div>
-                    <div class="text-sm text-[#555] mt-1 [.active_&]:text-white transition-colors">10 MIN • 60 SEC REST</div>
-                </div>
+    <div id="timer-screen" class="hidden flex-col flex-1 min-h-0 container-view">
+        <div class="grid grid-cols-2 flex-1 items-center w-full min-h-0">
+            <div class="flex flex-col justify-center items-center h-full border-r border-[#222]">
+                <div id="mainTimer" class="font-['Teko'] text-[26vh] font-bold text-[var(--theme-accent)] tracking-tight leading-none">00:00</div>
+                <div class="font-['Teko'] text-4xl text-gray-400 tracking-wider mt-2">TOTAL: <span id="totalTimer">00:00</span></div>
             </div>
-
-            <!-- Right Half -->
-            <div class="flex flex-col items-center justify-center border-l border-[#222] pl-4">
-                <div class="font-['Teko'] text-[3.5rem] text-[var(--theme-accent)] mb-4 leading-none transition-colors">ROUNDS</div>
-                <div class="flex items-center gap-6 mb-4">
-                    <div class="w-[60px] h-[60px] rounded-full bg-[#222] border border-[#444] flex items-center justify-center text-3xl cursor-pointer active:bg-[var(--theme-accent)] active:text-black active:border-[var(--theme-accent)] transition-colors" id="btn-minus">−</div>
-                    <span id="setupRoundCount" class="font-['Teko'] text-[6rem] w-[90px] text-center leading-none">8</span>
-                    <div class="w-[60px] h-[60px] rounded-full bg-[#222] border border-[#444] flex items-center justify-center text-3xl cursor-pointer active:bg-[var(--theme-accent)] active:text-black active:border-[var(--theme-accent)] transition-colors" id="btn-plus">+</div>
-                </div>
-                <div class="font-['Teko'] text-[#666] text-xl">TOTAL TIME: <span id="totalTimePreview">--:--</span></div>
-            </div>
-        </div>
-
-        <div class="shrink-0 pt-4 pb-2 w-full mt-auto">
-            <button class="w-full py-3 rounded-[50px] border-2 border-[var(--theme-accent)] text-[var(--theme-accent)] font-['Teko'] text-[2.2rem] tracking-[1px] bg-transparent active:bg-[var(--theme-accent)] active:text-black active:scale-[0.98] transition-all" id="btn-start-fight">START FIGHT</button>
-        </div>
-    </div>
-
-    <!-- TIMER SCREEN -->
-    <div id="timer-screen" class="hidden flex-col h-full w-full">
-        <div class="grid grid-cols-2 h-full w-full flex-1 items-center">
-            <!-- Left Zone -->
-            <div class="flex flex-col items-center justify-center h-full border-r border-[#333]">
-                <div id="mainTimer" class="font-['Teko'] text-[28vh] leading-[0.85] text-[var(--theme-accent)] transition-colors duration-300 rest-breathe-text">00:00</div>
-                <div class="font-['Teko'] text-[6vh] text-[#aaa] mt-2">TOTAL: <span id="totalTimer">00:00</span></div>
-            </div>
-            
-            <!-- Right Zone -->
-            <div class="flex flex-col justify-center pl-8 h-full">
-                <div id="statusText" class="font-['Teko'] text-[3.5rem] text-[var(--theme-accent)] mb-4 leading-none transition-colors duration-300 rest-breathe-text">ROUND 1</div>
+            <div class="flex flex-col justify-center h-full pl-8 gap-4">
+                <div id="statusText" class="font-['Teko'] text-4xl text-[var(--theme-accent)] tracking-widest uppercase">ROUND 1</div>
                 
-                <div class="bg-[#1a1a1a] px-5 py-2.5 rounded-xl border-l-[8px] border-[var(--theme-accent)] mb-5 w-full transition-colors duration-300 rest-breathe">
-                    <div class="text-[0.8rem] text-[#666] tracking-[1px] mb-1 uppercase">CURRENT COMBO</div>
-                    <div id="currentPattern" class="font-['Teko'] text-[13vh] text-white flex items-center gap-4 leading-[0.9]">GET READY</div>
+                <div class="bg-[#141414] p-4 border-l-4 border-[var(--theme-accent)] rounded-xl shadow-lg">
+                    <div class="text-xs text-gray-500 tracking-widest uppercase mb-1">CURRENT COMBO</div>
+                    <div id="currentPattern" class="font-['Teko'] text-[9vh] text-white flex gap-4 items-center leading-none">GET READY</div>
                 </div>
                 
-                <div class="pl-2.5 opacity-80">
-                    <div class="text-[0.8rem] text-[#666] tracking-[1px] mb-1 uppercase">NEXT UP</div>
-                    <div id="nextPattern" class="font-['Teko'] text-[5vh] text-[#555] flex items-center gap-2">...</div>
+                <div class="pl-2">
+                    <div class="text-xs text-gray-500 tracking-widest uppercase mb-1">NEXT UP</div>
+                    <div id="nextPattern" class="font-['Teko'] text-[4vh] text-gray-500 flex gap-2 items-center">...</div>
                 </div>
             </div>
         </div>
-        
-        <!-- Control Bar -->
-        <div class="flex gap-5 justify-center shrink-0 pt-4 pb-4">
-            <button class="bg-transparent border-2 border-[var(--theme-accent)] text-[var(--theme-accent)] px-10 py-2 rounded-[50px] font-['Teko'] text-[1.8rem] min-w-[150px] cursor-pointer transition-colors" id="pauseBtn">PAUSE</button>
-            <button class="bg-transparent border-2 border-[#ff4444] text-[#ff4444] px-10 py-2 rounded-[50px] font-['Teko'] text-[1.8rem] min-w-[150px] cursor-pointer" id="stopBtn">END</button>
+        <div class="flex gap-4 justify-center py-4 shrink-0 border-t border-[#222]">
+            <button id="pauseBtn" class="px-12 py-2 border-2 border-[var(--theme-accent)] text-[var(--theme-accent)] hover:bg-[var(--theme-accent)] hover:text-black font-['Teko'] text-2xl rounded-full min-width-[160px] transition-colors">PAUSE</button>
+            <button id="stopBtn" class="px-12 py-2 border-2 border-red-500 text-red-500 hover:bg-red-500 hover:text-white font-['Teko'] text-2xl rounded-full min-width-[160px] transition-colors">END</button>
         </div>
     </div>
 
-    <!-- FINISH SCREEN -->
-    <div id="finish-screen" class="hidden flex-col items-center justify-center h-full w-full text-center">
-        <h1 class="font-['Teko'] text-[15vh] text-[#00ff66] m-0 leading-none">VICTORY</h1>
-        <div class="font-['Teko'] text-[5vh] text-white mb-5 uppercase" id="finishLevelText">COMPLETED</div>
-        <div class="bg-[#222] px-10 py-4 rounded-2xl border border-[#333] mb-8">
-            <span class="text-[#888] uppercase text-[0.9rem]">ROUNDS</span><br>
-            <span id="finishRoundsVal" class="font-['Teko'] text-[10vh] text-[var(--theme-accent)] leading-none transition-colors">8</span>
+    <div id="finish-screen" class="hidden flex-col flex-1 items-center justify-center text-center container-view">
+        <h1 class="font-['Teko'] text-[14vh] text-[var(--theme-green)] tracking-widest leading-none m-0">VICTORY</h1>
+        <div id="finishLevelText" class="font-['Teko'] text-[4vh] text-white tracking-wide uppercase mb-4">COMPLETED</div>
+        <div class="bg-[#141414] border border-[#333] px-12 py-4 rounded-2xl mb-6">
+            <span class="text-xs text-gray-500 tracking-widest uppercase">ROUNDS Completed</span><br>
+            <span id="finishRoundsVal" class="font-['Teko'] text-[8vh] text-[var(--theme-accent)] leading-none">8</span>
         </div>
-        <button class="bg-transparent border-2 border-[var(--theme-accent)] text-[var(--theme-accent)] w-full max-w-[400px] py-3 rounded-[50px] font-['Teko'] text-[2.2rem] tracking-[1px] uppercase active:bg-[var(--theme-accent)] active:text-black transition-all" id="btn-restart">DONE</button>
+        <button id="btn-restart" class="px-24 py-3 border-2 border-[var(--theme-accent)] text-[var(--theme-accent)] hover:bg-[var(--theme-accent)] hover:text-black font-['Teko'] text-3xl rounded-full tracking-widest transition-all">DONE</button>
     </div>
 
 </div>
