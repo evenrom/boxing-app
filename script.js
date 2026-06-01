@@ -1,3 +1,22 @@
+if (typeof document === 'undefined') {
+    globalThis.document = {
+        addEventListener: () => null,
+        getElementById: () => ({ innerText: '', style: {}, classList: { add: () => null, remove: () => null } }),
+        querySelectorAll: () => [],
+        querySelector: () => null,
+        body: { classList: { add: () => null, remove: () => null } }
+    };
+}
+if (typeof window === 'undefined') {
+    globalThis.window = globalThis;
+}
+if (typeof localStorage === 'undefined') {
+    globalThis.localStorage = {
+        getItem: () => null,
+        setItem: () => null,
+        removeItem: () => null
+    };
+}
 
 if (typeof document === 'undefined') {
     global.document = {
@@ -134,12 +153,16 @@ const appState = {
 };
 
 function saveSettings() {
-    const settingsObj = {
-        intensity: appState.settings.intensity,
-        allocated_rounds: appState.settings.targetRounds,
-        system_mute_flag: appState.settings.isMuted
-    };
-    localStorage.setItem('boxing_system_settings', JSON.stringify(settingsObj));
+    try {
+        const settingsObj = {
+            intensity: appState.settings.intensity,
+            allocated_rounds: appState.settings.targetRounds,
+            system_mute_flag: appState.settings.isMuted
+        };
+        localStorage.setItem('boxing_system_settings', JSON.stringify(settingsObj));
+    } catch(e) {
+        console.warn('Failed to save boxing_system_settings', e);
+    }
 }
 
 function loadSettings() {
@@ -332,7 +355,7 @@ function updateTimerUI() {
             appState.pools.currentActiveCombo = retrieveNextTacticalCombo();
         }
         currentCombo = appState.pools.currentActiveCombo;
-        nextCombo = "RANDOMIZE";
+        nextCombo = appState.pools.shuffledDeck[appState.pools.activeComboIndex] || "BREATHE";
 
         document.getElementById('currentPattern').innerHTML = parseIcons(currentCombo);
         document.getElementById('nextPattern').innerHTML = parseIcons(nextCombo);
@@ -357,7 +380,7 @@ function finishSession() {
     if (appState.wakeLock) appState.wakeLock.release();
 
     const totalDurationMin = Math.round(appState.engine.workSecondsGlobal / 60);
-    if (totalDurationMin > 10) {
+    if (totalDurationMin >= 1) {
         logWorkout(totalDurationMin);
     }
 
@@ -367,24 +390,31 @@ function finishSession() {
 }
 
 function logWorkout(mins) {
-    if (mins <= 10) return;
-    const history = getWorkoutHistory();
-    const newRecord = {
-        workout_id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(),
-        timestamp: new Date().toISOString(),
-        intensity: appState.settings.intensity,
-        rounds_completed: appState.engine.currentRound,
-        duration_minutes: mins
-    };
-    history.push(newRecord);
-    localStorage.setItem('boxing_workout_history', JSON.stringify(history));
-    console.log('Workout Logged Locally', newRecord);
+    if (mins < 1) return;
+    try {
+        const history = getWorkoutHistory();
+        const newRecord = {
+            workout_id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(),
+            timestamp: new Date().toISOString(),
+            intensity: appState.settings.intensity,
+            rounds_completed: appState.engine.currentRound,
+            duration_minutes: mins
+        };
+        history.push(newRecord);
+        localStorage.setItem('boxing_workout_history', JSON.stringify(history));
+        console.log('Workout Logged Locally', newRecord);
+    } catch(e) {
+        console.warn('Failed to log workout to localStorage', e);
+    }
 }
 
 function getWorkoutHistory() {
     try {
         const stored = localStorage.getItem('boxing_workout_history');
-        if (stored) return JSON.parse(stored);
+        if (stored) {
+            const parsed = JSON.parse(stored);
+            if (Array.isArray(parsed)) return parsed;
+        }
     } catch(e) {
         console.warn('Failed to parse boxing_workout_history', e);
     }
@@ -394,7 +424,7 @@ function getWorkoutHistory() {
 function fetchStats() {
     const history = getWorkoutHistory();
     if (history.length === 0) return;
-    
+
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
     const recentWorkouts = history.filter(w => new Date(w.timestamp) >= oneWeekAgo);
