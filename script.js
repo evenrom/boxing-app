@@ -1,15 +1,67 @@
+
+if (typeof document === 'undefined') {
+    global.document = {
+        addEventListener: () => null,
+        getElementById: () => ({ innerText: '', style: {}, classList: { add: () => null, remove: () => null } }),
+        querySelectorAll: () => [],
+        querySelector: () => null,
+        body: { classList: { add: () => null, remove: () => null } }
+    };
+}
+if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+    global.localStorage = {
+        getItem: () => null,
+        setItem: () => null,
+        removeItem: () => null
+    };
+}
+
 // --- CONFIGURATION ---
-// IMPORTANT: Replace with your actual Web App URL
-const API_URL = "https://script.google.com/macros/s/AKfycbynhdDZ9-8Ms-hNys8mxYRmUKd5NkkpcoV9zCHHwaTcAAFARRg_LGkBguKVaKPxXoQb/exec";
 
 // --- AUDIO ASSETS ---
-const SOUNDS = {
-    bell: new Audio('https://github.com/evenrom/boxing-timer-assets/raw/refs/heads/main/bell.mp3'),
-    minute: new Audio('https://github.com/evenrom/boxing-timer-assets/raw/refs/heads/main/minute.mp3'),
-    countdown: new Audio('https://github.com/evenrom/boxing-timer-assets/raw/refs/heads/main/countdown.mp3')
+const audioContextOptions = {
+  bell: './assets/bell.mp3',
+  minute: './assets/minute.mp3',
+  countdown: './assets/countdown.mp3'
 };
+const audioBuffers = {};
+let audioCtx = null;
+let audioEngineInitialized = false;
 
+async function initializeAudioEngine() {
+  if (audioEngineInitialized) return;
+  try {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      audioCtx = new AudioContextClass();
+      for (const [key, path] of Object.entries(audioContextOptions)) {
+          try {
+              const response = await fetch(path);
+              const arrayBuffer = await response.arrayBuffer();
+              audioBuffers[key] = await audioCtx.decodeAudioData(arrayBuffer);
+          } catch(e) {
+              console.warn("Failed to load audio asset: " + path, e);
+          }
+      }
+      audioEngineInitialized = true;
+  } catch(e) {
+      console.warn("Web Audio API not supported or failed to init", e);
+  }
+}
+
+function playSound(name) {
+    if (!appState.settings.isMuted && audioCtx && audioBuffers[name]) {
+        try {
+            const source = audioCtx.createBufferSource();
+            source.buffer = audioBuffers[name];
+            source.connect(audioCtx.destination);
+            source.start(0);
+        } catch(e) {
+            console.warn("Failed to play sound: " + name, e);
+        }
+    }
+}
 // --- DIFFICULTY SETTINGS (FIXED ROUNDS) ---
+
 const CONFIG = {
     'ROOKIE': { round: 180, rest: 20, defaultRounds: 8 },
     'PRO':    { round: 300, rest: 30, defaultRounds: 6 },
@@ -52,39 +104,64 @@ const WORKOUT_PLAN = [
 ];
 
 // --- STATE MANAGEMENT ---
-let state = {
-    level: 'PRO', // FIX: Default to PRO
-    targetRounds: 6, // FIX: Default matches PRO
-    isMuted: localStorage.getItem('boxingMuted') === 'true',
-    userId: localStorage.getItem('boxingUserId'),
-    phase: 'setup',
-    timeLeft: 0,
-    totalTime: 0,
-    currentRound: 0,
-    workSeconds: 0,
-    playlist: [], 
-    timer: null,
-    wakeLock: null
+const appState = {
+  settings: {
+    intensity: 'PRO',
+    targetRounds: 6,
+    isMuted: false
+  },
+  engine: {
+    phase: 'SETUP',
+    currentRound: 1,
+    elapsedPhaseSeconds: 0,
+    elapsedTotalSeconds: 0,
+    workSecondsGlobal: 0,
+    timer: null
+  },
+  pools: {
+    masterCombos: [
+      "1", "1-2", "1-2-3", "1 ▲ 1", "1-2-7-2", "2-4", "1-1-2",
+      "1-2 ► 4", "1-3", "1-2-7-3", "1 ◄ 1-2", "1-3-7-3", "2-4-7-4",
+      "1-2-7-2", "1-2 ▲ 3", "1-2-7-4-2", "2 ▲ 4-4", "1 ▲ 3-3",
+      "1-3-7-3", "2-4-7-4", "1 ► 2-2", "1-2-1-2-1-2", "3-4-3-4-3-4",
+      "2 ► 1-3", "1 ► 2-4", "1-7-3", "2-7-4", "1 ▲ 1-2-7-2", "2-4-7-2-4", "1-2-3-7-2"
+    ],
+    shuffledDeck: [],
+    activeComboIndex: 0,
+    currentActiveCombo: null
+  },
+  wakeLock: null
 };
 
+function saveSettings() {
+    const settingsObj = {
+        intensity: appState.settings.intensity,
+        allocated_rounds: appState.settings.targetRounds,
+        system_mute_flag: appState.settings.isMuted
+    };
+    localStorage.setItem('boxing_system_settings', JSON.stringify(settingsObj));
+}
+
+function loadSettings() {
+    try {
+        const stored = localStorage.getItem('boxing_system_settings');
+        if (stored) {
+            const parsed = JSON.parse(stored);
+            if (parsed.intensity) appState.settings.intensity = parsed.intensity;
+            if (parsed.allocated_rounds) appState.settings.targetRounds = parsed.allocated_rounds;
+            if (parsed.system_mute_flag !== undefined) appState.settings.isMuted = parsed.system_mute_flag;
+        }
+    } catch(e) {
+        console.warn('Failed to parse boxing_system_settings', e);
+    }
+}
 // --- INITIALIZATION ---
+
+
 document.addEventListener('DOMContentLoaded', () => {
-    if (!state.userId) {
-        state.userId = crypto.randomUUID();
-        localStorage.setItem('boxingUserId', state.userId);
-    }
-    console.log("Current User ID:", state.userId); // Debug Log
-
-    if (API_URL && API_URL.includes('script.google.com')) {
-        fetchStats();
-    } else {
-        console.warn("API URL not set in script.js");
-    }
-
+    loadSettings();
     updateMuteIcon();
-    
-    // FIX: Initialize with PRO
-    app.selectDiff('PRO'); 
+    app.selectDiff(appState.settings.intensity);
     
     // Service Worker Registration
     if ('serviceWorker' in navigator) {
@@ -101,28 +178,31 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-restart').onclick = resetApp;
     document.getElementById('btn-minus').onclick = () => changeRounds(-1);
     document.getElementById('btn-plus').onclick = () => changeRounds(1);
+
+    fetchStats();
 });
 
 // --- APP LOGIC ---
 const app = {
     selectDiff: (lvl) => {
-        state.level = lvl;
-        // Update active button
+        appState.settings.intensity = lvl;
         document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(`btn-${lvl.toLowerCase()}`).classList.add('active');
+        const btn = document.getElementById('btn-' + lvl.toLowerCase());
+        if(btn) btn.classList.add('active');
         
-        // FIX: Set rounds based on difficulty default
-        state.targetRounds = CONFIG[lvl].defaultRounds;
-        document.getElementById('setupRoundCount').innerText = state.targetRounds;
+        appState.settings.targetRounds = CONFIG[lvl].defaultRounds;
         
+        document.getElementById('setupRoundCount').innerText = appState.settings.targetRounds;
         updateTotalTimePreview();
+        saveSettings();
     }
 };
 
 function changeRounds(delta) {
-    state.targetRounds = Math.max(1, state.targetRounds + delta);
-    document.getElementById('setupRoundCount').innerText = state.targetRounds;
+    appState.settings.targetRounds = Math.max(1, appState.settings.targetRounds + delta);
+    document.getElementById('setupRoundCount').innerText = appState.settings.targetRounds;
     updateTotalTimePreview();
+    saveSettings();
 }
 
 function updateTotalTimePreview() {
@@ -131,17 +211,48 @@ function updateTotalTimePreview() {
 }
 
 function calculateTotalTime() {
-    const cfg = CONFIG[state.level];
-    return 60 + (state.targetRounds * cfg.round) + ((state.targetRounds - 1) * cfg.rest);
+    const cfg = CONFIG[appState.settings.intensity];
+    return 180 + (appState.settings.targetRounds * cfg.round) + ((appState.settings.targetRounds - 1) * cfg.rest); // 180s for warmup
 }
 
 // --- WORKOUT ENGINE ---
-function startWorkout() {
-    state.phase = 'warmup';
-    state.currentRound = 0;
-    state.timeLeft = 60;
-    state.workSeconds = 0;
-    state.totalTime = calculateTotalTime();
+function executeDeckShuffle() {
+  let sourceArray = [...appState.pools.masterCombos];
+  let iterations = sourceArray.length;
+
+  while (iterations !== 0) {
+    let randomIndex = Math.floor(Math.random() * iterations);
+    iterations--;
+
+    let temporaryValue = sourceArray[iterations];
+    sourceArray[iterations] = sourceArray[randomIndex];
+    sourceArray[randomIndex] = temporaryValue;
+  }
+
+  appState.pools.shuffledDeck = sourceArray;
+  appState.pools.activeComboIndex = 0;
+}
+
+function retrieveNextTacticalCombo() {
+  if (appState.pools.shuffledDeck.length === 0 ||
+      appState.pools.activeComboIndex >= appState.pools.shuffledDeck.length) {
+    executeDeckShuffle();
+  }
+
+  const currentCombo = appState.pools.shuffledDeck[appState.pools.activeComboIndex];
+  appState.pools.activeComboIndex++;
+  return currentCombo;
+}
+// --- WORKOUT ENGINE ---
+
+
+async function startWorkout() {
+    await initializeAudioEngine();
+    appState.engine.phase = 'warmup';
+    appState.engine.currentRound = 0;
+    appState.engine.elapsedPhaseSeconds = 180;
+    appState.engine.workSecondsGlobal = 0;
+    appState.engine.elapsedTotalSeconds = calculateTotalTime();
     
     document.getElementById('setup-screen').style.display = 'none';
     document.getElementById('timer-screen').style.display = 'flex';
@@ -149,88 +260,90 @@ function startWorkout() {
     requestWakeLock();
     playSound('bell');
     
-    if (state.timer) clearInterval(state.timer);
-    state.timer = setInterval(tick, 1000);
+    if (appState.engine.timer) clearInterval(appState.engine.timer);
+    appState.engine.timer = setInterval(handleEngineCoreTick, 1000);
     updateTimerUI();
 }
 
-function tick() {
+function handleEngineCoreTick() {
     if (document.getElementById('pauseBtn').innerText === "RESUME") return;
 
-    state.timeLeft--;
-    state.totalTime--;
+    appState.engine.elapsedPhaseSeconds--;
+    appState.engine.elapsedTotalSeconds--;
     
-    if (state.phase === 'work') {
-        state.workSeconds++;
-        if (state.timeLeft > 0 && state.timeLeft % 60 === 0) playSound('minute');
+    if (appState.engine.phase === 'work') {
+        appState.engine.workSecondsGlobal++;
+
+        if (appState.engine.elapsedPhaseSeconds > 0 && appState.engine.elapsedPhaseSeconds % 60 === 0) {
+            playSound('minute');
+        }
     }
 
-    if (state.timeLeft <= 0) {
-        handlePhaseChange();
+    if (appState.engine.elapsedPhaseSeconds <= 0) {
+        transitionWorkoutLifecyclePhase();
     }
     
-    if (state.timeLeft === 10) playSound('countdown');
+    if (appState.engine.elapsedPhaseSeconds === 10) playSound('countdown');
 
     updateTimerUI();
 }
 
-function handlePhaseChange() {
+function transitionWorkoutLifecyclePhase() {
     playSound('bell');
-    const cfg = CONFIG[state.level];
+    const cfg = CONFIG[appState.settings.intensity];
 
-    if (state.phase === 'warmup') {
-        state.phase = 'work';
-        state.currentRound = 1;
-        state.timeLeft = cfg.round;
-    } else if (state.phase === 'work') {
-        if (state.currentRound >= state.targetRounds) {
+    if (appState.engine.phase === 'warmup') {
+        appState.engine.phase = 'work';
+        appState.engine.currentRound = 1;
+        appState.engine.elapsedPhaseSeconds = cfg.round;
+    } else if (appState.engine.phase === 'work') {
+        if (appState.engine.currentRound >= appState.settings.targetRounds) {
             finishSession();
             return;
         }
-        state.phase = 'rest';
-        state.timeLeft = cfg.rest;
-    } else if (state.phase === 'rest') {
-        state.phase = 'work';
-        state.currentRound++;
-        state.timeLeft = cfg.round;
+        appState.engine.phase = 'rest';
+        appState.engine.elapsedPhaseSeconds = cfg.rest;
+    } else if (appState.engine.phase === 'rest') {
+        appState.engine.phase = 'work';
+        appState.engine.currentRound++;
+        appState.engine.elapsedPhaseSeconds = cfg.round;
     }
 }
 
 function updateTimerUI() {
-    document.getElementById('mainTimer').innerText = formatTime(state.timeLeft);
-    document.getElementById('totalTimer').innerText = formatTime(state.totalTime);
+    document.getElementById('mainTimer').innerText = formatTime(appState.engine.elapsedPhaseSeconds);
+    document.getElementById('totalTimer').innerText = formatTime(appState.engine.elapsedTotalSeconds);
     
     const status = document.getElementById('statusText');
     const body = document.body;
 
-    if (state.phase === 'work') {
+    if (appState.engine.phase === 'work') {
         body.classList.remove('rest-mode');
-        status.innerText = `ROUND ${state.currentRound}`;
+        status.innerText = 'ROUND ' + appState.engine.currentRound;
         
-// Lógica Update: Fixed order, Loop back, Change every 60s
-        const intervalDuration = 60; 
+        const workSecs = appState.engine.workSecondsGlobal;
+        let currentCombo, nextCombo;
         
-// Calculate index strictly based on time elapsed
-       // Modulo operator (%) ensures it loops back to start (1) when list ends
-       const totalIndex = Math.floor(state.workSeconds / intervalDuration);
-       
-       // FIX: Pointing to WORKOUT_PLAN instead of empty state.playlist
-       const currentIndex = totalIndex % WORKOUT_PLAN.length;
-       const nextIndex = (currentIndex + 1) % WORKOUT_PLAN.length;
-
-       const currentCombo = WORKOUT_PLAN[currentIndex];
-       const nextCombo = WORKOUT_PLAN[nextIndex];
+        // Retrieve from shuffle deck on minute marks
+        if (appState.engine.elapsedPhaseSeconds % 60 === 0 && appState.engine.elapsedPhaseSeconds > 0) {
+            appState.pools.currentActiveCombo = retrieveNextTacticalCombo();
+        }
+        if (!appState.pools.currentActiveCombo) {
+            appState.pools.currentActiveCombo = retrieveNextTacticalCombo();
+        }
+        currentCombo = appState.pools.currentActiveCombo;
+        nextCombo = "RANDOMIZE";
 
         document.getElementById('currentPattern').innerHTML = parseIcons(currentCombo);
         document.getElementById('nextPattern').innerHTML = parseIcons(nextCombo);
         
     } else {
         body.classList.add('rest-mode');
-        status.innerText = state.phase === 'warmup' ? "WARM UP" : "REST";
+        status.innerText = appState.engine.phase === 'warmup' ? "WARM UP" : "REST";
         document.getElementById('currentPattern').innerText = "BREATHE";
         
-        if (state.phase === 'rest') {
-            document.getElementById('nextPattern').innerText = `NEXT: ROUND ${state.currentRound + 1}`;
+        if (appState.engine.phase === 'rest') {
+            document.getElementById('nextPattern').innerText = 'NEXT: ROUND ' + (appState.engine.currentRound + 1);
         } else {
             document.getElementById('nextPattern').innerText = "GET READY";
         }
@@ -238,63 +351,108 @@ function updateTimerUI() {
 }
 
 // --- DATA & SYNC ---
-function finishSession() {
-    clearInterval(state.timer);
-    if (state.wakeLock) state.wakeLock.release();
 
-    const totalDurationMin = Math.round(state.workSeconds / 60); 
-    if (totalDurationMin >= 1) { 
+function finishSession() {
+    if (appState.engine.timer) clearInterval(appState.engine.timer);
+    if (appState.wakeLock) appState.wakeLock.release();
+
+    const totalDurationMin = Math.round(appState.engine.workSecondsGlobal / 60);
+    if (totalDurationMin > 10) {
         logWorkout(totalDurationMin);
     }
 
     document.getElementById('timer-screen').style.display = 'none';
     document.getElementById('finish-screen').style.display = 'flex';
-    document.getElementById('finishRoundsVal').innerText = state.targetRounds;
+    document.getElementById('finishRoundsVal').innerText = appState.settings.targetRounds;
 }
 
 function logWorkout(mins) {
-    if (!API_URL.includes('http')) return;
-    const url = `${API_URL}?action=logWorkout&userId=${state.userId}&difficulty=${state.level}&rounds=${state.targetRounds}&duration=${mins}`;
-    
-    // Using no-cors mode for simple logging
-    fetch(url, { mode: 'no-cors' })
-        .then(() => console.log('Workout Logged'))
-        .catch(e => console.error('Save failed', e));
+    if (mins <= 10) return;
+    const history = getWorkoutHistory();
+    const newRecord = {
+        workout_id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(),
+        timestamp: new Date().toISOString(),
+        intensity: appState.settings.intensity,
+        rounds_completed: appState.engine.currentRound,
+        duration_minutes: mins
+    };
+    history.push(newRecord);
+    localStorage.setItem('boxing_workout_history', JSON.stringify(history));
+    console.log('Workout Logged Locally', newRecord);
+}
+
+function getWorkoutHistory() {
+    try {
+        const stored = localStorage.getItem('boxing_workout_history');
+        if (stored) return JSON.parse(stored);
+    } catch(e) {
+        console.warn('Failed to parse boxing_workout_history', e);
+    }
+    return [];
 }
 
 function fetchStats() {
-    if (!API_URL.includes('http')) return;
-    const url = `${API_URL}?action=getStats&userId=${state.userId}`;
+    const history = getWorkoutHistory();
+    if (history.length === 0) return;
     
-    fetch(url)
-        .then(r => r.json())
-        .then(data => {
-            console.log("Stats received:", data);
-            if(data.status === 'error') return;
-            document.getElementById('stat-weekly').innerText = data.workoutsPerWeek || 0;
-            document.getElementById('stat-duration').innerText = data.avgDuration || 0;
-            document.getElementById('stat-level').innerText = data.avgLevel || '-';
-        })
-        .catch(e => console.log('Stats fetch error:', e));
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    const recentWorkouts = history.filter(w => new Date(w.timestamp) >= oneWeekAgo);
+
+    let totalDuration = 0;
+    const intensityCounts = {};
+
+    history.forEach(w => {
+        totalDuration += (w.duration_minutes || 0);
+        intensityCounts[w.intensity] = (intensityCounts[w.intensity] || 0) + 1;
+    });
+
+    const avgDuration = Math.round(totalDuration / history.length);
+
+    let maxCount = 0;
+    let avgLevel = '-';
+    for (const [level, count] of Object.entries(intensityCounts)) {
+        if (count > maxCount) {
+            maxCount = count;
+            avgLevel = level;
+        }
+    }
+
+    const statWeekly = document.getElementById('stat-weekly');
+    if (statWeekly) statWeekly.innerText = recentWorkouts.length;
+
+    const statDuration = document.getElementById('stat-duration');
+    if (statDuration) statDuration.innerText = avgDuration;
+
+    const statLevel = document.getElementById('stat-level');
+    if (statLevel) statLevel.innerText = avgLevel;
 }
 
 // --- HELPERS ---
+
 function toggleMute() {
-    state.isMuted = !state.isMuted;
-    localStorage.setItem('boxingMuted', state.isMuted);
+    appState.settings.isMuted = !appState.settings.isMuted;
+    saveSettings();
     updateMuteIcon();
 }
 
 function updateMuteIcon() {
     const icon = document.querySelector('#muteBtn span');
-    icon.innerText = state.isMuted ? 'volume_off' : 'volume_up';
-    icon.style.opacity = state.isMuted ? '0.5' : '1';
+    if(icon) {
+        icon.innerText = appState.settings.isMuted ? 'volume_off' : 'volume_up';
+        icon.style.opacity = appState.settings.isMuted ? '0.5' : '1';
+    }
 }
-
 function playSound(name) {
-    if (!state.isMuted && SOUNDS[name]) {
-        SOUNDS[name].currentTime = 0;
-        SOUNDS[name].play().catch(e => {});
+    if (!appState.settings.isMuted && audioCtx && audioBuffers[name]) {
+        try {
+            const source = audioCtx.createBufferSource();
+            source.buffer = audioBuffers[name];
+            source.connect(audioCtx.destination);
+            source.start(0);
+        } catch(e) {
+            console.warn("Failed to play sound: " + name, e);
+        }
     }
 }
 
@@ -315,7 +473,7 @@ function formatTime(s) {
 
 async function requestWakeLock() {
     if ('wakeLock' in navigator) {
-        try { state.wakeLock = await navigator.wakeLock.request('screen'); } catch(e){}
+        try { appState.wakeLock = await navigator.wakeLock.request('screen'); } catch(e){}
     }
 }
 
