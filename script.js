@@ -231,7 +231,6 @@ const FIGHTER_ROUTINES = {
 
 // --- STATE MANAGEMENT ---
 const runtimeEngineState = {
-  selectedFighterKey: 'TYSON',
   configuredRoundsCount: 7,
   activeSessionSeconds: 0,
   activePhaseSeconds: 0,
@@ -241,8 +240,8 @@ const runtimeEngineState = {
 
 const appState = {
   settings: {
-    intensity: 'PRO',
-    targetRounds: 6,
+    intensity: 'TYSON',
+    targetRounds: 7,
     isMuted: false
   },
   engine: {
@@ -288,7 +287,8 @@ function loadSettings() {
 document.addEventListener('DOMContentLoaded', () => {
     loadSettings();
     updateMuteIcon();
-    app.selectDiff(appState.settings.intensity);
+    const initialIntensity = appState.settings.intensity;
+    app.selectDiff(initialIntensity);
     
     // Service Worker Registration
     if ('serviceWorker' in navigator) {
@@ -305,27 +305,23 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-restart').onclick = resetApp;
     document.getElementById('btn-minus').onclick = () => changeRounds(-1);
     document.getElementById('btn-plus').onclick = () => changeRounds(1);
-
-    fetchStats();
 });
 
 // --- APP LOGIC ---
 const app = {
     selectDiff: (lvl) => {
-        appState.settings.intensity = lvl;
+        const validKeys = ['TYSON', 'MAYWEATHER', 'ALI'];
+        const sanitizedLvl = validKeys.includes(lvl) ? lvl : 'TYSON';
+
+        appState.settings.intensity = sanitizedLvl;
+
         document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
-        const btn = document.getElementById('btn-' + lvl.toLowerCase());
+        const btn = document.getElementById('btn-' + sanitizedLvl.toLowerCase());
         if(btn) btn.classList.add('active');
         
-        // Default rounds mapping based on legacy setup. Default to 6 if mapping fails.
-        const defaultRoundsMap = {
-            'ROOKIE': 8,
-            'PRO': 6,
-            'CHAMP': 4
-        };
-        appState.settings.targetRounds = defaultRoundsMap[lvl] || 6;
-        
-        document.getElementById('setupRoundCount').innerText = appState.settings.targetRounds;
+        const setupRoundCountEl = document.getElementById('setupRoundCount');
+        if (setupRoundCountEl) setupRoundCountEl.innerText = appState.settings.targetRounds;
+
         updateTotalTimePreview();
         saveSettings();
     }
@@ -441,7 +437,7 @@ function updateTimerUI() {
         body.classList.remove('rest-mode');
         if (status) status.innerText = 'ROUND ' + runtimeEngineState.activeRoundIndex;
         
-        const routine = FIGHTER_ROUTINES[runtimeEngineState.selectedFighterKey].plan;
+        const routine = FIGHTER_ROUTINES[appState.settings.intensity].plan;
         const routineLength = routine.length;
         
         let relativeMinuteIndex = Math.floor((300 - runtimeEngineState.activePhaseSeconds) / 60);
@@ -468,7 +464,7 @@ function updateTimerUI() {
             if (status) status.innerText = "REST";
             if (currentPatternEl) currentPatternEl.innerText = "BREATHE";
 
-            const roundFocusArr = FIGHTER_ROUTINES[runtimeEngineState.selectedFighterKey].roundFocus;
+            const roundFocusArr = FIGHTER_ROUTINES[appState.settings.intensity].roundFocus;
             const focusText = `סיבוב ${runtimeEngineState.activeRoundIndex + 1}: ${roundFocusArr[runtimeEngineState.activeRoundIndex % roundFocusArr.length]}`;
             if (nextPatternEl) nextPatternEl.innerText = focusText;
         }
@@ -523,42 +519,6 @@ function getWorkoutHistory() {
     return [];
 }
 
-function fetchStats() {
-    const history = getWorkoutHistory();
-    if (history.length === 0) return;
-
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-    const recentWorkouts = history.filter(w => new Date(w.timestamp) >= oneWeekAgo);
-
-    let totalDuration = 0;
-    const intensityCounts = {};
-
-    history.forEach(w => {
-        totalDuration += (w.duration_minutes || 0);
-        intensityCounts[w.intensity] = (intensityCounts[w.intensity] || 0) + 1;
-    });
-
-    const avgDuration = Math.round(totalDuration / history.length);
-
-    let maxCount = 0;
-    let avgLevel = '-';
-    for (const [level, count] of Object.entries(intensityCounts)) {
-        if (count > maxCount) {
-            maxCount = count;
-            avgLevel = level;
-        }
-    }
-
-    const statWeekly = document.getElementById('stat-weekly');
-    if (statWeekly) statWeekly.innerText = recentWorkouts.length;
-
-    const statDuration = document.getElementById('stat-duration');
-    if (statDuration) statDuration.innerText = avgDuration;
-
-    const statLevel = document.getElementById('stat-level');
-    if (statLevel) statLevel.innerText = avgLevel;
-}
 
 // --- HELPERS ---
 
