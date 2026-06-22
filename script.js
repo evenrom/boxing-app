@@ -288,7 +288,7 @@ function loadSettings() {
 document.addEventListener('DOMContentLoaded', () => {
     loadSettings();
     updateMuteIcon();
-    app.selectDiff(appState.settings.intensity);
+    app.selectDiff(appState.settings.intensity || 'TYSON');
     
     // Service Worker Registration
     if ('serviceWorker' in navigator) {
@@ -305,27 +305,21 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-restart').onclick = resetApp;
     document.getElementById('btn-minus').onclick = () => changeRounds(-1);
     document.getElementById('btn-plus').onclick = () => changeRounds(1);
-
-    fetchStats();
 });
 
 // --- APP LOGIC ---
 const app = {
     selectDiff: (lvl) => {
         appState.settings.intensity = lvl;
+        runtimeEngineState.selectedFighterKey = lvl;
         document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
         const btn = document.getElementById('btn-' + lvl.toLowerCase());
         if(btn) btn.classList.add('active');
         
-        // Default rounds mapping based on legacy setup. Default to 6 if mapping fails.
-        const defaultRoundsMap = {
-            'ROOKIE': 8,
-            'PRO': 6,
-            'CHAMP': 4
-        };
-        appState.settings.targetRounds = defaultRoundsMap[lvl] || 6;
+        appState.settings.targetRounds = appState.settings.targetRounds || 7;
         
-        document.getElementById('setupRoundCount').innerText = appState.settings.targetRounds;
+        const setupRoundCountEl = document.getElementById('setupRoundCount');
+        if (setupRoundCountEl) setupRoundCountEl.innerText = appState.settings.targetRounds;
         updateTotalTimePreview();
         saveSettings();
     }
@@ -523,42 +517,6 @@ function getWorkoutHistory() {
     return [];
 }
 
-function fetchStats() {
-    const history = getWorkoutHistory();
-    if (history.length === 0) return;
-
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-    const recentWorkouts = history.filter(w => new Date(w.timestamp) >= oneWeekAgo);
-
-    let totalDuration = 0;
-    const intensityCounts = {};
-
-    history.forEach(w => {
-        totalDuration += (w.duration_minutes || 0);
-        intensityCounts[w.intensity] = (intensityCounts[w.intensity] || 0) + 1;
-    });
-
-    const avgDuration = Math.round(totalDuration / history.length);
-
-    let maxCount = 0;
-    let avgLevel = '-';
-    for (const [level, count] of Object.entries(intensityCounts)) {
-        if (count > maxCount) {
-            maxCount = count;
-            avgLevel = level;
-        }
-    }
-
-    const statWeekly = document.getElementById('stat-weekly');
-    if (statWeekly) statWeekly.innerText = recentWorkouts.length;
-
-    const statDuration = document.getElementById('stat-duration');
-    if (statDuration) statDuration.innerText = avgDuration;
-
-    const statLevel = document.getElementById('stat-level');
-    if (statLevel) statLevel.innerText = avgLevel;
-}
 
 // --- HELPERS ---
 
