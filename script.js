@@ -452,7 +452,9 @@ function updateTimerUI() {
         const currentCombo = routine[finalTargetIndex % routineLength].combo;
         const nextCombo = routine[(finalTargetIndex + 1) % routineLength].combo;
 
-        if (currentPatternEl) currentPatternEl.innerHTML = parseIcons(currentCombo);
+        if (currentPatternEl) {
+            currentPatternEl.innerHTML = renderStructuredComboHTML(currentCombo, routine[finalTargetIndex % routineLength].desc);
+        }
         if (nextPatternEl) nextPatternEl.innerHTML = parseIcons(nextCombo);
         
     } else {
@@ -622,4 +624,27 @@ function endWorkout() {
 
 function resetApp() {
     location.reload();
+}
+
+function renderStructuredComboHTML(comboString, descriptorText) {
+    const elements = comboString.split(/(\s+|-|▲|►|◄)/);
+    let parsedHTML = `<div class="flex items-center justify-center gap-4">`;
+    elements.forEach(item => {
+        const trimmed = item.trim();
+        if (!trimmed) return;
+        if (["-", "▲", "►", "◄"].includes(trimmed)) {
+            let iconName = "arrow_forward";
+            if (trimmed === "▲") iconName = "keyboard_double_arrow_up";
+            if (trimmed === "►") iconName = "keyboard_double_arrow_right";
+            if (trimmed === "◄") iconName = "keyboard_double_arrow_left";
+            parsedHTML += `<span class="material-symbols-outlined text-gray-500 text-2xl">${iconName}</span>`;
+        } else if (/^\d+$/.test(trimmed)) {
+            parsedHTML += `
+                <div class="flex flex-col items-center bg-[var(--surface-glass)] border-[var(--glass-border)] px-4 py-2 rounded">
+                    <span class="font-['Teko'] text-5xl text-white font-bold">${trimmed}</span>
+                </div>`;
+        }
+    });
+    parsedHTML += `</div><p class="font-['Assistant'] text-gray-400 text-center mt-4 text-xl">${descriptorText}</p>`;
+    return parsedHTML;
 }
