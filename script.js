@@ -79,50 +79,166 @@ function playSound(name) {
         }
     }
 }
-// --- DIFFICULTY SETTINGS (FIXED ROUNDS) ---
-
-const CONFIG = {
-    'ROOKIE': { round: 180, rest: 20, defaultRounds: 8 },
-    'PRO':    { round: 300, rest: 30, defaultRounds: 6 },
-    'CHAMP':  { round: 600, rest: 60, defaultRounds: 4 }
+const FIGHTER_ROUTINES = {
+  TYSON: {
+    name: "Mike Tyson",
+    roundFocus: [
+      "חימום מובנה לשמירת טווח ומציאת מרחק",
+      "כניסה לטווח ושינוי גובה",
+      "דגש אפרקטים (Peek-a-boo Style)",
+      "לחץ והתחמקות מתוזמנת",
+      "עבודה גוף-ראש ועוצמה מתפרצת",
+      "שיא העומס (Volume Power)",
+      "סיבוב אליפות (עייפות קיצונית וכוח רצון)"
+    ],
+    plan: [
+      { combo: "1", desc: "ג'אב בלבד לשמירת טווח" },
+      { combo: "2", desc: "קרוס בלבד למציאת מרחק" },
+      { combo: "1-2", desc: "שילוב בסיסי" },
+      { combo: "1 ▲ 1", desc: "ג'אב, ירידה להגנה, ג'אב" },
+      { combo: "1-2-7-2", desc: "סגירת החימום עם כניסה ראשונה" },
+      { combo: "1 ▲ 3", desc: "ג'אב, ירידה (Slip), הוק שמאלי חזק" },
+      { combo: "2-4", desc: "קרוס, הוק ימני עוצמתי" },
+      { combo: "1 ◄ 1-2", desc: "צעד שמאלה, ג'אב-קרוס מהיר" },
+      { combo: "1-2 ▲ 3", desc: "ג'אב-קרוס, ירידה, הוק שמאלי לגוף/ראש" },
+      { combo: "3-4-3-4", desc: "רצף הוקים קרוב ומהיר" },
+      { combo: "1-7-3", desc: "ג'אב, אפרקט ימני, הוק שמאלי (קלאסי טייסון)" },
+      { combo: "2-7-4", desc: "קרוס, אפרקט שמאלי, הוק ימני" },
+      { combo: "1 ▲ 1-2-7-2", desc: "ג'אב, ירידה, ג'אב-קרוס-אפרקט-קרוס" },
+      { combo: "1-2-7-4-2", desc: "קומבינציית כוח מתגלגלת" },
+      { combo: "3-4-3-4-3-4", desc: "התפוצצות בטווח אפס" },
+      { combo: "1 ► 2-2", desc: "צעד ימינה, קרוס כפול" },
+      { combo: "1 ▲ 3-3", desc: "ג'אב, ירידה, הוק שמאלי כפול (גוף-ראש)" },
+      { combo: "2 ▲ 4-4", desc: "קרוס, ירידה, הוק ימני כפול" },
+      { combo: "1-2-7-3", desc: "ג'אב-קרוס, אפרקט, הוק מסיים" },
+      { combo: "1-3-7-3", desc: "רצף כוח שמאלי-ימני לסירוגין" },
+      { combo: "2-4-7-2-4", desc: "רצף כוח ארוך להרס הגנות" },
+      { combo: "1 ▲ 1", desc: "הטעיה למטה, כניסה WITH ג'אב" },
+      { combo: "1-2-3-7-2", desc: "קומבינציה שלמה מטווח בינוני לקרוב" },
+      { combo: "1-2-7-2", desc: "פיניש מהיר" },
+      { combo: "3-4-3-4", desc: "רצף כוח מתיש" },
+      { combo: "1-2-1-2-1-2", desc: "מטר ג'אב-קרוס רציף להסחת דעת" },
+      { combo: "1-2-7-4-2", desc: "מעבר מיידי למכות כוח" },
+      { combo: "1-3-7-3", desc: "לחץ מתמיד" },
+      { combo: "2-4-7-4", desc: "סיומת חזקה עם הוק ימני" },
+      { combo: "1 ▲ 3-3", desc: "כניסה מתחת למכות של היריב" },
+      { combo: "1-2-3", desc: "קומבינציה קלאסית ויציבה" },
+      { combo: "1-7-3", desc: "כניסה אחרונה לאפרקט-הוק" },
+      { combo: "2-4-7-2-4", desc: "פירוק הגנות אחרון" },
+      { combo: "1 ▲ 1-2-7-2", desc: "תנועה ועוצמה משולבים" },
+      { combo: "1-2-1-2-1-2", desc: "דקה אחרונה: התפוצצות מהירות וכוח עד הבאזר" }
+    ]
+  },
+  MAYWEATHER: {
+    name: "Floyd Mayweather",
+    roundFocus: [
+      "חימום מובנה - שילוב ישרים ותנועה בסיסית",
+      "מהירות ותנועה היקפית",
+      "קומבינציות ארוכות ומטעות",
+      "הגנה חכמה והתקפות נגד (Counter-Punching)",
+      "שליטה בקצב (Ring Generalship)",
+      "נפח ועייפות מנטלית",
+      "סיבוב הגנה מוחלטת ויציאה קדימה"
+    ],
+    plan: [
+      { combo: "1", desc: "ג'אב בודד מהיר (Flicker Jab)" },
+      { combo: "2", desc: "קרוס מהיר לטווח ארוך" },
+      { combo: "1-2", desc: "שילוב ישרים בסיסי" },
+      { combo: "1 ► 2-4", desc: "תנועה הצידה ויציאה עם קומבינציה" },
+      { combo: "1 ◄ 1-2", desc: "צעד שמאלה עם ג'אב כפול וקרוס" },
+      { combo: "1-1-2", desc: "ג'אב כפול מהיר, קרוס ישיר" },
+      { combo: "1 ► 2-2", desc: "צעד ימינה, קרוס מהיר כפול לטווח" },
+      { combo: "1-2 ► 4", desc: "ג'אב-קרוס, צעד ימינה, הוק חטוף" },
+      { combo: "1-2-3", desc: "שלשה קלאסית ומהירה" },
+      { combo: "2 ► 1-3", desc: "קרוס, צעד ימינה, ג'אב-הוק מהיר" },
+      { combo: "1-2-1-2-1-2", desc: "שש מכות ישרות ומהירות (עבודת נפח)" },
+      { combo: "1-2-3-7-2", desc: "קומבינציה ארוכה: ישרים, הוק, אפרקט, קרוס מסיים" },
+      { combo: "1 ◄ 1-2", desc: "תנועת רגליים מתמדת שמאלה" },
+      { combo: "1-2-7-3", desc: "ישרים, אפרקט מהיר, הוק מציק" },
+      { combo: "2-4-7-4", desc: "מענה מהיר מהיד האחורית" },
+      { combo: "1 ▲ 1", desc: "ג'אב, התחמקות לאחור/למטה, ג'אב חוזר" },
+      { combo: "1-2 ▲ 3", desc: "ישרים, משיכת גוף לאחור (Pull), הוק שמאלי מהיר" },
+      { combo: "2-4-7-2-4", desc: "רצף מכות קלות ומהירות להצפת היריב" },
+      { combo: "1 ► 2-4", desc: "יציאה מהקו, קרוס, הוק ימני" },
+      { combo: "1-1-2", desc: "חזרה לג'אב כפול וקרוס" },
+      { combo: "1-3-7-3", desc: "קומבינציה משתנה: ג'אב, הוק, אפרקט, הוק" },
+      { combo: "2 ► 1-3", desc: "קרוס, צעד הצידה, יציאה WITH ג'אב-הוק" },
+      { combo: "1-2-7-4-2", desc: "קומבינציה ארוכה ומורכבת לחיתוך זוויות" },
+      { combo: "1 ▲ 1-2-7-2", desc: "תנועת ראש מרובה תוך כדי התקפה" },
+      { combo: "3-4-3-4-3-4", desc: "רצף מכות קלות ומהירות לגוף ולראש" },
+      { combo: "1-2-1-2-1-2", desc: "שמירה על ידיים עסוקות ללא הפסקה" },
+      { combo: "1-2 ► 4", desc: "ג'אב קרוס ויציאה מהזווית של היריב" },
+      { combo: "1-2-3-7-2", desc: "החלפת הילוכים לקומבינציה ארוכה" },
+      { combo: "1 ◄ 1-2", desc: "הגנה דרך תנועת רגליים" },
+      { combo: "2-4", desc: "קרוס-הוק חטופים ומהירים" },
+      { combo: "1 ▲ 1", desc: "ניהול מרחק פסיבי-אקטיבי" },
+      { combo: "1-2-7-2", desc: "ארבע מכות ישרות ומהירות למרכז" },
+      { combo: "2-4-7-2-4", desc: "שבירת קצב אחרונה" },
+      { combo: "1 ► 2-4", desc: "צעד אחרון החוצה מהטווח" },
+      { combo: "1-2-1-2-1-2", desc: "דקה אחרונה: ספרינט מהירות מוחלט וקל עד הבאזר" }
+    ]
+  },
+  ALI: {
+    name: "Muhammad Ali",
+    roundFocus: [
+      "חימום מובנה - עבודת ישרים וניהול טווח ארוך",
+      "ריקוד זירה ותנועה היקפית (The Ali Shuffle)",
+      "שינוי קצב וג'אב מציק (The Flicker Jab)",
+      "לחימה בנסיגה (Fighting on the Backfoot)",
+      "התקפות מתפרצות (Showboating & Speed)",
+      "לחץ בסיבובים המאוחרים",
+      "סיבוב אליפות (עייפות ומהירות מנטלית)"
+    ],
+    plan: [
+      { combo: "1", desc: "ג'אב בודד מהיר (Flicker)" },
+      { combo: "2", desc: "קרוס ישיר ארוך" },
+      { combo: "1-2", desc: "שילוב ישרים בסיסי" },
+      { combo: "1-1-2", desc: "ג'אב כפול וקרוס" },
+      { combo: "1 ▲ 1", desc: "ג'אב, הטיית ראש לאחור, ג'אב חוזר" },
+      { combo: "1 ◄ 1-2", desc: "ג'אב, צעד שמאלה, ג'אב-קרוס מהיר" },
+      { combo: "1 ► 2-2", desc: "ג'אב, צעד ימינה, קרוס כפול לטווח" },
+      { combo: "1-2-1-2", desc: "ארבע מכות ישרות ומהירות מהמקום" },
+      { combo: "1-2 ► 4", desc: "ישרים, צעד ימינה ויציאה עם הוק חטוף" },
+      { combo: "3-4-3-4", desc: "רצף הוקים מהיר בגובה הראש" },
+      { combo: "1-1-1", desc: "ג'אב משולש מהיר להסחת דעת ומרחק" },
+      { combo: "1-2-3", desc: "שלשה קלאסית וחלקה" },
+      { combo: "2-4-7-4", desc: "מעבר מהיר למכות כוח מטווח ארוך" },
+      { combo: "1 ▲ 1-2-7-2", desc: "ג'אב, הטיית גוף, קומבינציה זורמת" },
+      { combo: "1-2-1-2-1-2", desc: "ספרינט מכות ישרות (נפח גבוה)" },
+      { combo: "1 ▲ 1", desc: "משיכת הראש לאחור (Lean back) וג'אב תוך כדי צעד אחורה" },
+      { combo: "2 ► 1-3", desc: "קרוס, צעד הצידה, ג'אב-הוק מהיר" },
+      { combo: "1-2-7-3", desc: "ישרים, אפרקט מפתיע, הוק מסיים" },
+      { combo: "1 ◄ 1-2", desc: "תנועה שמאלה לשבירת קו ההתקפה" },
+      { combo: "1-3-7-3", desc: "שילוב ידיים מהיר ומורכב" },
+      { combo: "1-2-1-2-1-2", desc: "מטר מכות מהירות לפנים" },
+      { combo: "2-4", desc: "קרוס והוק מהיר ויציאה החוצה" },
+      { combo: "1-2-3-7-2", desc: "קומבינציה שלמה שמתחילה מרחוק ומסתיימת קרוב" },
+      { combo: "1 ► 2-4", desc: "צעד ימינה, קרוס, הוק ימני" },
+      { combo: "3-4-3-4-3-4", desc: "התפוצצות הוקים קצרים" },
+      { combo: "1-1-2", desc: "חזרה לבסיס: ג'אב כפול אגרסיבי וקרוס" },
+      { combo: "1-2-7-4-2", desc: "רצף מכות ארוך שיוצר לחץ מנטלי" },
+      { combo: "1 ▲ 3", desc: "ג'אב, חמיקה הצידה, הוק שמאלי מהיר" },
+      { combo: "2-4-7-2-4", desc: "חילופי מהלכים מהירים" },
+      { combo: "1 ◄ 1-2", desc: "יציאה מהירה מהטווח של היריב" },
+      { combo: "1-1-1", desc: "שימוש בג'אב כדי להחזיק את המרחק" },
+      { combo: "1-2-3", desc: "קומבינציה נקייה וחדה" },
+      { combo: "1-2-7-2", desc: "ארבע מכות מהירות למרכז" },
+      { combo: "1 ► 2-4", desc: "צעד אחרון הצידה ושילוב מכות נגד" },
+      { combo: "1-2-1-2-1-2", desc: "דקה אחרונה: ספרינט ישרים מוחלט עד הבאזר האחרון" }
+    ]
+  }
 };
 
-// --- WORKOUT PLAN (FLAT SEQUENCE) ---
-// Each line = 60 Seconds of work
-const WORKOUT_PLAN = [
-    "1",
-    "1-2",
-    "1-2-3",
-    "1 ▲ 1",
-    "1-2-7-2",
-    "2-4",
-    "1-1-2",
-    "1-2 ► 4",
-    "1-3",
-    "1-2-7-3",
-    "1 ◄ 1-2",
-    "1-3-7-3",
-    "2-4-7-4",
-    "1-2-7-2",
-    "1-2 ▲ 3",
-    "1-2-7-4-2",
-    "2 ▲ 4-4",
-    "1 ▲ 3-3",
-    "1-3-7-3",
-    "2-4-7-4",
-    "1 ► 2-2",
-    "1-2-1-2-1-2",
-    "3-4-3-4-3-4",
-    "2 ► 1-3",
-    "1 ► 2-4",
-    "1-7-3",
-    "2-7-4",
-    "1 ▲ 1-2-7-2",
-    "2-4-7-2-4",
-    "1-2-3-7-2"
-];
-
 // --- STATE MANAGEMENT ---
+const runtimeEngineState = {
+  selectedFighterKey: 'TYSON',
+  configuredRoundsCount: 7,
+  activeSessionSeconds: 0,
+  activePhaseSeconds: 0,
+  currentPhase: 'SETUP',
+  activeRoundIndex: 1
+};
+
 const appState = {
   settings: {
     intensity: 'PRO',
@@ -136,18 +252,6 @@ const appState = {
     elapsedTotalSeconds: 0,
     workSecondsGlobal: 0,
     timer: null
-  },
-  pools: {
-    masterCombos: [
-      "1", "1-2", "1-2-3", "1 ▲ 1", "1-2-7-2", "2-4", "1-1-2",
-      "1-2 ► 4", "1-3", "1-2-7-3", "1 ◄ 1-2", "1-3-7-3", "2-4-7-4",
-      "1-2-7-2", "1-2 ▲ 3", "1-2-7-4-2", "2 ▲ 4-4", "1 ▲ 3-3",
-      "1-3-7-3", "2-4-7-4", "1 ► 2-2", "1-2-1-2-1-2", "3-4-3-4-3-4",
-      "2 ► 1-3", "1 ► 2-4", "1-7-3", "2-7-4", "1 ▲ 1-2-7-2", "2-4-7-2-4", "1-2-3-7-2"
-    ],
-    shuffledDeck: [],
-    activeComboIndex: 0,
-    currentActiveCombo: null
   },
   wakeLock: null
 };
@@ -213,7 +317,13 @@ const app = {
         const btn = document.getElementById('btn-' + lvl.toLowerCase());
         if(btn) btn.classList.add('active');
         
-        appState.settings.targetRounds = CONFIG[lvl].defaultRounds;
+        // Default rounds mapping based on legacy setup. Default to 6 if mapping fails.
+        const defaultRoundsMap = {
+            'ROOKIE': 8,
+            'PRO': 6,
+            'CHAMP': 4
+        };
+        appState.settings.targetRounds = defaultRoundsMap[lvl] || 6;
         
         document.getElementById('setupRoundCount').innerText = appState.settings.targetRounds;
         updateTotalTimePreview();
@@ -234,48 +344,25 @@ function updateTotalTimePreview() {
 }
 
 function calculateTotalTime() {
-    const cfg = CONFIG[appState.settings.intensity];
-    return 180 + (appState.settings.targetRounds * cfg.round) + ((appState.settings.targetRounds - 1) * cfg.rest); // 180s for warmup
+    return 120 + (appState.settings.targetRounds * 300) + ((appState.settings.targetRounds - 1) * 30); // 120s for warmup
 }
 
-// --- WORKOUT ENGINE ---
-function executeDeckShuffle() {
-  let sourceArray = [...appState.pools.masterCombos];
-  let iterations = sourceArray.length;
-
-  while (iterations !== 0) {
-    let randomIndex = Math.floor(Math.random() * iterations);
-    iterations--;
-
-    let temporaryValue = sourceArray[iterations];
-    sourceArray[iterations] = sourceArray[randomIndex];
-    sourceArray[randomIndex] = temporaryValue;
-  }
-
-  appState.pools.shuffledDeck = sourceArray;
-  appState.pools.activeComboIndex = 0;
-}
-
-function retrieveNextTacticalCombo() {
-  if (appState.pools.shuffledDeck.length === 0 ||
-      appState.pools.activeComboIndex >= appState.pools.shuffledDeck.length) {
-    executeDeckShuffle();
-  }
-
-  const currentCombo = appState.pools.shuffledDeck[appState.pools.activeComboIndex];
-  appState.pools.activeComboIndex++;
-  return currentCombo;
-}
 // --- WORKOUT ENGINE ---
 
 
 async function startWorkout() {
     await initializeAudioEngine();
+
+    runtimeEngineState.currentPhase = 'WARMUP';
+    runtimeEngineState.activePhaseSeconds = 120;
+    runtimeEngineState.activeRoundIndex = 1;
+    runtimeEngineState.activeSessionSeconds = calculateTotalTime();
+
     appState.engine.phase = 'warmup';
-    appState.engine.currentRound = 0;
-    appState.engine.elapsedPhaseSeconds = 180;
+    appState.engine.currentRound = 1;
+    appState.engine.elapsedPhaseSeconds = 120;
     appState.engine.workSecondsGlobal = 0;
-    appState.engine.elapsedTotalSeconds = calculateTotalTime();
+    appState.engine.elapsedTotalSeconds = runtimeEngineState.activeSessionSeconds;
     
     document.getElementById('setup-screen').style.display = 'none';
     document.getElementById('timer-screen').style.display = 'flex';
@@ -291,84 +378,97 @@ async function startWorkout() {
 function handleEngineCoreTick() {
     if (document.getElementById('pauseBtn').innerText === "RESUME") return;
 
-    appState.engine.elapsedPhaseSeconds--;
-    appState.engine.elapsedTotalSeconds--;
+    runtimeEngineState.activePhaseSeconds--;
+    runtimeEngineState.activeSessionSeconds--;
     
-    if (appState.engine.phase === 'work') {
+    appState.engine.elapsedPhaseSeconds = runtimeEngineState.activePhaseSeconds;
+    appState.engine.elapsedTotalSeconds = runtimeEngineState.activeSessionSeconds;
+
+    if (runtimeEngineState.currentPhase === 'WORK') {
         appState.engine.workSecondsGlobal++;
 
-        if (appState.engine.elapsedPhaseSeconds > 0 && appState.engine.elapsedPhaseSeconds % 60 === 0) {
+        if (runtimeEngineState.activePhaseSeconds > 0 && runtimeEngineState.activePhaseSeconds % 60 === 0) {
             playSound('minute');
         }
     }
 
-    if (appState.engine.elapsedPhaseSeconds <= 0) {
+    if (runtimeEngineState.activePhaseSeconds <= 0) {
         transitionWorkoutLifecyclePhase();
     }
     
-    if (appState.engine.elapsedPhaseSeconds === 10) playSound('countdown');
+    if (runtimeEngineState.activePhaseSeconds === 10) playSound('countdown');
 
     updateTimerUI();
 }
 
 function transitionWorkoutLifecyclePhase() {
     playSound('bell');
-    const cfg = CONFIG[appState.settings.intensity];
 
-    if (appState.engine.phase === 'warmup') {
-        appState.engine.phase = 'work';
-        appState.engine.currentRound = 1;
-        appState.engine.elapsedPhaseSeconds = cfg.round;
-    } else if (appState.engine.phase === 'work') {
-        if (appState.engine.currentRound >= appState.settings.targetRounds) {
+    if (runtimeEngineState.currentPhase === 'WARMUP') {
+        runtimeEngineState.currentPhase = 'WORK';
+        runtimeEngineState.activePhaseSeconds = 300;
+        runtimeEngineState.activeRoundIndex = 1;
+    } else if (runtimeEngineState.currentPhase === 'WORK') {
+        if (runtimeEngineState.activeRoundIndex >= appState.settings.targetRounds) {
             finishSession();
             return;
         }
-        appState.engine.phase = 'rest';
-        appState.engine.elapsedPhaseSeconds = cfg.rest;
-    } else if (appState.engine.phase === 'rest') {
-        appState.engine.phase = 'work';
-        appState.engine.currentRound++;
-        appState.engine.elapsedPhaseSeconds = cfg.round;
+        runtimeEngineState.currentPhase = 'REST';
+        runtimeEngineState.activePhaseSeconds = 30;
+    } else if (runtimeEngineState.currentPhase === 'REST') {
+        runtimeEngineState.currentPhase = 'WORK';
+        runtimeEngineState.activePhaseSeconds = 300;
+        runtimeEngineState.activeRoundIndex++;
     }
+
+    appState.engine.phase = runtimeEngineState.currentPhase.toLowerCase();
+    appState.engine.currentRound = runtimeEngineState.activeRoundIndex;
+    appState.engine.elapsedPhaseSeconds = runtimeEngineState.activePhaseSeconds;
 }
 
 function updateTimerUI() {
-    document.getElementById('mainTimer').innerText = formatTime(appState.engine.elapsedPhaseSeconds);
-    document.getElementById('totalTimer').innerText = formatTime(appState.engine.elapsedTotalSeconds);
+    const mainTimer = document.getElementById('mainTimer');
+    const totalTimer = document.getElementById('totalTimer');
+    if (mainTimer) mainTimer.innerText = formatTime(runtimeEngineState.activePhaseSeconds);
+    if (totalTimer) totalTimer.innerText = formatTime(runtimeEngineState.activeSessionSeconds);
     
     const status = document.getElementById('statusText');
+    const currentPatternEl = document.getElementById('currentPattern');
+    const nextPatternEl = document.getElementById('nextPattern');
     const body = document.body;
 
-    if (appState.engine.phase === 'work') {
+    if (runtimeEngineState.currentPhase === 'WORK') {
         body.classList.remove('rest-mode');
-        status.innerText = 'ROUND ' + appState.engine.currentRound;
+        if (status) status.innerText = 'ROUND ' + runtimeEngineState.activeRoundIndex;
         
-        const workSecs = appState.engine.workSecondsGlobal;
-        let currentCombo, nextCombo;
+        const routine = FIGHTER_ROUTINES[runtimeEngineState.selectedFighterKey].plan;
+        const routineLength = routine.length;
         
-        // Retrieve from shuffle deck on minute marks
-        if (appState.engine.elapsedPhaseSeconds % 60 === 0 && appState.engine.elapsedPhaseSeconds > 0) {
-            appState.pools.currentActiveCombo = retrieveNextTacticalCombo();
-        }
-        if (!appState.pools.currentActiveCombo) {
-            appState.pools.currentActiveCombo = retrieveNextTacticalCombo();
-        }
-        currentCombo = appState.pools.currentActiveCombo;
-        nextCombo = appState.pools.shuffledDeck[appState.pools.activeComboIndex] || "BREATHE";
+        let relativeMinuteIndex = Math.floor((300 - runtimeEngineState.activePhaseSeconds) / 60);
+        if (relativeMinuteIndex < 0) relativeMinuteIndex = 0;
+        if (relativeMinuteIndex >= 5) relativeMinuteIndex = 4;
+        let finalTargetIndex = ((runtimeEngineState.activeRoundIndex - 1) * 5) + relativeMinuteIndex;
 
-        document.getElementById('currentPattern').innerHTML = parseIcons(currentCombo);
-        document.getElementById('nextPattern').innerHTML = parseIcons(nextCombo);
+        const currentCombo = routine[finalTargetIndex % routineLength].combo;
+        const nextCombo = routine[(finalTargetIndex + 1) % routineLength].combo;
+
+        if (currentPatternEl) currentPatternEl.innerHTML = parseIcons(currentCombo);
+        if (nextPatternEl) nextPatternEl.innerHTML = parseIcons(nextCombo);
         
     } else {
         body.classList.add('rest-mode');
-        status.innerText = appState.engine.phase === 'warmup' ? "WARM UP" : "REST";
-        document.getElementById('currentPattern').innerText = "BREATHE";
         
-        if (appState.engine.phase === 'rest') {
-            document.getElementById('nextPattern').innerText = 'NEXT: ROUND ' + (appState.engine.currentRound + 1);
-        } else {
-            document.getElementById('nextPattern').innerText = "GET READY";
+        if (runtimeEngineState.currentPhase === 'WARMUP') {
+            if (status) status.innerText = "WARM UP";
+            if (currentPatternEl) currentPatternEl.innerText = "BREATHE";
+            if (nextPatternEl) nextPatternEl.innerText = "GET READY";
+        } else if (runtimeEngineState.currentPhase === 'REST') {
+            if (status) status.innerText = "REST";
+            if (currentPatternEl) currentPatternEl.innerText = "BREATHE";
+
+            const roundFocusArr = FIGHTER_ROUTINES[runtimeEngineState.selectedFighterKey].roundFocus;
+            const focusText = `סיבוב ${runtimeEngineState.activeRoundIndex + 1}: ${roundFocusArr[runtimeEngineState.activeRoundIndex % roundFocusArr.length]}`;
+            if (nextPatternEl) nextPatternEl.innerText = focusText;
         }
     }
 }
