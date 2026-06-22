@@ -231,7 +231,6 @@ const FIGHTER_ROUTINES = {
 
 // --- STATE MANAGEMENT ---
 const runtimeEngineState = {
-  selectedFighterKey: 'TYSON',
   configuredRoundsCount: 7,
   activeSessionSeconds: 0,
   activePhaseSeconds: 0,
@@ -242,7 +241,7 @@ const runtimeEngineState = {
 const appState = {
   settings: {
     intensity: 'TYSON',
-    targetRounds: 6,
+    targetRounds: 7,
     isMuted: false
   },
   engine: {
@@ -288,7 +287,8 @@ function loadSettings() {
 document.addEventListener('DOMContentLoaded', () => {
     loadSettings();
     updateMuteIcon();
-    app.selectDiff(appState.settings.intensity || 'TYSON');
+    const initialIntensity = appState.settings.intensity;
+    app.selectDiff(initialIntensity);
     
     // Service Worker Registration
     if ('serviceWorker' in navigator) {
@@ -314,14 +314,11 @@ const app = {
         const sanitizedLvl = validKeys.includes(lvl) ? lvl : 'TYSON';
 
         appState.settings.intensity = sanitizedLvl;
-        runtimeEngineState.selectedFighterKey = sanitizedLvl;
 
         document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
         const btn = document.getElementById('btn-' + sanitizedLvl.toLowerCase());
         if(btn) btn.classList.add('active');
         
-        appState.settings.targetRounds = appState.settings.targetRounds || 7;
-
         const setupRoundCountEl = document.getElementById('setupRoundCount');
         if (setupRoundCountEl) setupRoundCountEl.innerText = appState.settings.targetRounds;
 
@@ -440,7 +437,7 @@ function updateTimerUI() {
         body.classList.remove('rest-mode');
         if (status) status.innerText = 'ROUND ' + runtimeEngineState.activeRoundIndex;
         
-        const routine = FIGHTER_ROUTINES[runtimeEngineState.selectedFighterKey].plan;
+        const routine = FIGHTER_ROUTINES[appState.settings.intensity].plan;
         const routineLength = routine.length;
         
         let relativeMinuteIndex = Math.floor((300 - runtimeEngineState.activePhaseSeconds) / 60);
@@ -467,7 +464,7 @@ function updateTimerUI() {
             if (status) status.innerText = "REST";
             if (currentPatternEl) currentPatternEl.innerText = "BREATHE";
 
-            const roundFocusArr = FIGHTER_ROUTINES[runtimeEngineState.selectedFighterKey].roundFocus;
+            const roundFocusArr = FIGHTER_ROUTINES[appState.settings.intensity].roundFocus;
             const focusText = `סיבוב ${runtimeEngineState.activeRoundIndex + 1}: ${roundFocusArr[runtimeEngineState.activeRoundIndex % roundFocusArr.length]}`;
             if (nextPatternEl) nextPatternEl.innerText = focusText;
         }
