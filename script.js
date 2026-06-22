@@ -241,7 +241,7 @@ const runtimeEngineState = {
 
 const appState = {
   settings: {
-    intensity: 'PRO',
+    intensity: 'TYSON',
     targetRounds: 6,
     isMuted: false
   },
@@ -310,16 +310,21 @@ document.addEventListener('DOMContentLoaded', () => {
 // --- APP LOGIC ---
 const app = {
     selectDiff: (lvl) => {
-        appState.settings.intensity = lvl;
-        runtimeEngineState.selectedFighterKey = lvl;
+        const validKeys = ['TYSON', 'MAYWEATHER', 'ALI'];
+        const sanitizedLvl = validKeys.includes(lvl) ? lvl : 'TYSON';
+
+        appState.settings.intensity = sanitizedLvl;
+        runtimeEngineState.selectedFighterKey = sanitizedLvl;
+
         document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
-        const btn = document.getElementById('btn-' + lvl.toLowerCase());
+        const btn = document.getElementById('btn-' + sanitizedLvl.toLowerCase());
         if(btn) btn.classList.add('active');
         
         appState.settings.targetRounds = appState.settings.targetRounds || 7;
-        
+
         const setupRoundCountEl = document.getElementById('setupRoundCount');
         if (setupRoundCountEl) setupRoundCountEl.innerText = appState.settings.targetRounds;
+
         updateTotalTimePreview();
         saveSettings();
     }
