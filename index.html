@@ -79,7 +79,7 @@
     </div>
 
     <div id="timer-screen" class="hidden flex-col flex-1 min-h-0 container-view">
-        <div class="grid grid-cols-2 flex-1 items-center w-full min-h-0">
+        <div class="grid grid-cols-2 w-full h-full">
             <div class="flex flex-col justify-center items-center h-full border-r border-[#222]">
                 <div id="mainTimer" class="font-['Teko'] text-[26vh] font-bold text-[var(--theme-accent)] tracking-tight leading-none">00:00</div>
                 <div class="font-['Teko'] text-4xl text-gray-400 tracking-wider mt-2">TOTAL: <span id="totalTimer">00:00</span></div>
@@ -87,12 +87,12 @@
             <div class="flex flex-col justify-center h-full pl-8 gap-4">
                 <div id="statusText" class="font-['Teko'] text-4xl text-[var(--theme-accent)] tracking-widest uppercase">ROUND 1</div>
                 
-                <div class="bg-[#141414] p-4 rounded-xl shadow-lg">
+                <div class="bg-[#141414] p-4 rounded-xl shadow-lg flex-[2] min-h-0 flex flex-col justify-center">
                     <div class="text-xs text-gray-500 tracking-widest uppercase mb-1">CURRENT COMBO</div>
                     <div id="currentPattern" class="font-['Teko'] text-[9vh] text-white flex gap-4 items-center leading-none">GET READY</div>
                 </div>
                 
-                <div class="pl-2">
+                <div class="pl-2 flex-[1] min-h-0 flex flex-col justify-center">
                     <div class="text-xs text-gray-500 tracking-widest uppercase mb-1">NEXT UP</div>
                     <div id="nextPattern" class="font-['Teko'] text-[4vh] text-gray-500 flex gap-2 items-center">...</div>
                 </div>
