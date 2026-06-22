@@ -1,84 +1,55 @@
-\# Product Requirement Document (PRD) - Boxing Countdown PWA
+# Product Requirement Document (PRD) - Fighter Styles HUD Update[cite: 3]
 
+## 1. Project Overview & Scope[cite: 3]
+- **Product Name**: Boxing Countdown (Ring-Vision HUD)[cite: 3]
+- **Target Persona**: Single-user deployment optimized for local, offline gym training on fixed tablet hardware.[cite: 3]
+- **Orientation**: Rigid, non-adaptive Landscape viewport matrix. Multi-line wrapping or column-stacking is strictly prohibited.[cite: 3]
+- **Architecture Constraints**: Pure Client-Side runtime environment. Zero dependencies on external database endpoints, remote cloud hosting, or live network handshakes.[cite: 3]
 
+## 2. Core Functional Requirements[cite: 3]
+### Configuration Dashboard Mode[cite: 3]
+- **Fighter Profile Selection Stack**: Replaces legacy intensity structures with three premium tactical training modes:[cite: 3]
+  - **TYSON**: Close-range in-fighting simulation emphasizing power hooks, uppercuts, and low slips (▲).[cite: 3]
+  - **MAYWEATHER**: Mid-range counter-punching module tracking straight-hook metrics and lateral angle exits (►, ◄).[cite: 3]
+  - **ALI**: Long-range high-volume deployment focused on flicker jabs, linear combinations, and continuous footwork.[cite: 3]
+- **Round Allocation Steppers**: Native increment/decrement inputs regulating targeted total training cycles.[cite: 3]
+- **Telemetry Duration Counter**: Dynamically computes aggregate session duration variables based on structural timing constants ("TOTAL TIME: MM:SS").[cite: 3]
 
-\## 1. Project Overview \& Scope
+### Active Telemetry Training HUD Mode[cite: 3]
+- **Geometric Viewport Partitioning**: Rigid 50/50 horizontal width grid allocation. Left panel isolates countdown clocks; Right panel handles strike tracking data views.[cite: 3]
+- **State Synchronized Visual Accents**: Employs high-visibility Electric Cyan bloom vectors during active work periods, transitioning to Matrix Green breathing cycles during scheduled recovery windows.[cite: 3]
+- **Global Sound Suppression Toggle**: UI interrupter persisting mute states via client storage layers without claiming exclusive hardware audio focus channels.[cite: 3]
 
-\- \*\*Product Name\*\*: Boxing Countdown
+## 3. Training Engine Pipeline Specifications[cite: 3]
+### Phase A: Chrono Warmup Protocol[cite: 3]
+- **Execution Boundary**: Enforced for the exact initial 120 seconds (2 Minutes) of aggregate elapsed runtime.[cite: 3]
+- **UI Render Targets**: Left block tracks down-counter progression; Right block locks flat textual directives ("BREATHE" / "GET READY").[cite: 3]
+- **Fighter Matrix Bypass**: Structural routine vectors are fully ignored by the compiler loop during this active window.[cite: 3]
 
-\- \*\*Target Persona\*\*: Single-user deployment for local, offline gym training on tablet hardware.
+### Phase B: Deterministic Fighter Routine Processing[cite: 3]
+- **Array Traversal Concept**: Core random card shuffling routines and Fisher-Yates permutations are entirely disabled. Training patterns follow a rigid linear tracking protocol.[cite: 3]
+- **Time-Step Synchronization Ticker**: The execution engine tracks timeline data over a strict 1-second cadence. Active combination indexes shift deterministically on a flat 60-second operational interval match loop.[cite: 3]
+- **Array Boundary Constraint Handling**:[cite: 3]
+  - **Truncation Bound Rule**: If configured total round thresholds fall beneath active routine bounds, training cycles terminate gracefully.[cite: 3]
+  - **Overflow Index Loop Rule**: If round counter allocations exceed the data matrix array bounds, tracking indicators instantly reset back to zero to loop the routine smoothly.[cite: 3]
 
-\- \*\*Orientation\*\*: Strict Landscape orientation layout. No device viewport wrapping or adaptive column-stacking.
+## 4. Telemetry Header & Combination Specifications[cite: 3]
+- **Dynamic Rest View Notifications**: During active recovery intervals, the telemetry engine evaluates upcoming round structures to extract metadata focus indicators.[cite: 3]
+- **Heading String Template**: `Round [X]: [FOCUS_METRIC_SUBTITLE]` (e.g., `"Round 3: Uppercut emphasis (Peek-a-boo Style)"`).[cite: 3]
+- **High-Visibility Segment Splitting**: Numeric strike targets must be completely separated from translation data strings, rendering numbers inside larger display components.[cite: 3]
+- **Translation Subtitle Injections**: Every combination output block must declare localized textual definitions detailing the mechanics of active strike items directly underneath the main numbers.[cite: 3]
 
-\- \*\*Budget / Architecture Constraint\*\*: Zero-Cost, Client-Side only deployment. No database cloud infrastructure, no remote API configurations.
+## 5. Audio Coexistence Matrix[cite: 3]
+- **Concurrent Streaming Rules**: PWA signal triggers must operate asynchronously alongside native media applications, allowing external audio background tasks (e.g., Spotify streams) to run continuously without clipping.[cite: 3]
+- **Audio Focus Policy**: Programmatic requests capturing exclusive system-wide hardware audio focus states are barred.[cite: 3]
+- **Hardware Trigger Compliance**: Browser underlying AudioContext mechanisms must be fully loaded, established, and warmed during explicit primary client input interaction events (e.g., Selecting "START FIGHT").[cite: 3]
 
+## 6. Local Storage Persistence Schema[cite: 3]
+- **Data Registers**: All system variables are retained locally inside browser native memory layers using the following validation keys:[cite: 3]
+  - `boxing_current_fighter_key`: Tracks active profile selection parameter flags (TYSON | MAYWEATHER | ALI).[cite: 3]
+  - `boxing_allocated_rounds_count`: Stores targeted iteration counts.[cite: 3]
+  - `boxing_system_mute_state`: Boolean controller persisting global audio state parameters.[cite: 3]
 
-
-\## 2. Core Functional Requirements
-
-\- \*\*Dashboard Configuration Mode\*\*:
-
-&#x20; - Intensity Selection Pane: Direct selection between ROOKIE (3 min work / 20s rest), PRO (5 min work / 30s rest), and CHAMP (10 min work / 60s rest).
-
-&#x20; - Round Allocation Controls: Increment/decrement steppers modifying target total rounds.
-
-&#x20; - Contextual Metadata Display: Dynamically computed workout sequence duration calculation ("TOTAL TIME: MM:SS").
-
-\- \*\*Active Telemetry Training Mode\*\*:
-
-&#x20; - Split-Panel View Layout: Fixed 50/50 horizontal width allocation. Left zone isolates countdown clocks; Right zone aggregates combination execution instructions.
-
-&#x20; - State Synchronized Accents: Electric Cyan visualization during high-intensity intervals; Matrix Green breathing effects applied during scheduled rest cycles.
-
-&#x20; - Global Mute Interrupter: Persistence-configured UI interrupter preventing localized browser application sound output without capturing exclusive system hardware audio channels.
-
-
-
-\## 3. Core Training Engine \& Logic Specs
-
-\- \*\*Phase 1: Global Chrono Warmup Sequence\*\*:
-
-&#x20; - Execution Interval: Enforced for the exact initial 180 seconds of aggregate elapsed execution time.
-
-&#x20; - Display Interface: Left side renders down-counter; Right side displays text asset "BREATHE" / "GET READY".
-
-&#x20; - Combo Array Bypass: Pure linear routing. Suppresses random generator processing.
-
-\- \*\*Phase 2: Tactical Combination Array Shuffling\*\*:
-
-&#x20; - Core Processing Concept: "Deck of Cards" non-repeating constraint sequence logic.
-
-&#x20; - Functional Step 1: Clone master repository collection containing target boxing combination data models.
-
-&#x20; - Functional Step 2: Apply Fisher-Yates array permutation logic to randomize current active target matrix index orders.
-
-&#x20; - Functional Step 3: Iterate sequentially through permutation array paths, flashing current tactical indicators on a clean 60-second operational loop ticker.
-
-&#x20; - Functional Step 4: Enforce unique constraint rules preventing single-element re-processing until complete pool iteration returns exhaustion state flags. Trigger reshuffle sequence instantly on buffer drop.
-
-
-
-\## 4. Audio Processing Constraints
-
-\- \*\*Concurrent Coexistence Matrix\*\*:
-
-&#x20; - The PWA internal signal generator must operate asynchronously alongside external audio playback services (e.g., Spotify background streams).
-
-&#x20; - Suppress programmatic requests capturing explicit hardware Exclusive Audio Focus states.
-
-\- \*\*Hardware Trigger Compliance\*\*:
-
-&#x20; - Initialize, load, and warm browser underlying Web Audio Context subroutines immediately following explicit client interaction events (e.g., Target pointer tap action context detected on "START FIGHT" component node).
-
-
-
-\## 5. Localized Storage Scheme
-
-\- \*\*Variable Key Registers\*\*:
-
-&#x20; - `boxing\_current\_intensity`: Text string mapping current operational mode parameters (`ROOKIE` / `PRO` / `CHAMP`).
-
-&#x20; - `boxing\_allocated\_rounds`: Numerical allocation tracking intended iteration targets.
-
-&#x20; - `boxing\_system\_mute\_flag`: Boolean value indicating global app sound suppression.
-
+## 7. Technical Handoff for Amy[cite: 3]
+- **Selected Architecture Stack**: Modern Web Stack (Client-Only Static Progressive Web Application, 0-Cost Local Deployment).[cite: 3]
+- **Storage Layer**: Local Browser Storage API (`localStorage`).[cite: 3]

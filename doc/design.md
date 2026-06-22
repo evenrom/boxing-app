@@ -1,84 +1,59 @@
-\# Product Requirement Document (PRD) - Boxing Countdown PWA
+# Design System Specification - Fighter Styles HUD Update
 
+## 1. Brand Aesthetic & Core Philosophy
+- **Aesthetic Profile**: Tactical Glassmorphic HUD.
+- **Visual Environment**: Engineered for instant visual telemetry interpretation inside low-light athletic training environments.
+- **Core Mechanics**: Employs deep void fields, frosted translucent instrument layers, and high-visibility state-driven structural illumination blooms.
 
+## 2. Visual Token Registries
+```yaml
+canvas:
+  background-void: '#0b0b0b'             # Pure canvas contrast backdrop layer
+  surface-glass-fill: 'rgba(20, 20, 20, 0.65)' # Translucent structural pane core
+  glass-border-spec: '1px solid rgba(255, 255, 255, 0.08)' # Mechanical edge mapping track
 
-\## 1. Project Overview \& Scope
+accents:
+  work-cyan: '#0099ff'                  # Work state timeline indicator & bloom glow
+  work-bloom-rgba: 'rgba(0, 153, 255, 0.3)'
+  rest-green: '#00ff99'                 # Recovery state breathing ambient indicator
+  rest-bloom-rgba: 'rgba(0, 255, 153, 0.2)'
+  alert-crimson: '#ff4444'              # Final 10-second round clock warning signal
 
-\- \*\*Product Name\*\*: Boxing Countdown
+shades:
+  on-surface-high: '#e5e2e1'            # Primary crisp indicator values
+  on-surface-variant: '#bfc7d5'         # Lower priority metadata strings
+  border-interactive-high: 'rgba(255, 255, 255, 0.2)'
+3. Typographic Hierarchy Regulations
+Numeric Timers & Tactical Striking Indicators
+Font Family: Teko, sans-serif
 
-\- \*\*Target Persona\*\*: Single-user deployment for local, offline gym training on tablet hardware.
+Weight Settings: 600 (Compressed, Bold Metrics)
 
-\- \*\*Orientation\*\*: Strict Landscape orientation layout. No device viewport wrapping or adaptive column-stacking.
+Letter Case Mapping: Absolute Enforced Uppercase
 
-\- \*\*Budget / Architecture Constraint\*\*: Zero-Cost, Client-Side only deployment. No database cloud infrastructure, no remote API configurations.
+Jitter Mitigation Rule: System nodes rendering dynamic time values must declare font-variant-numeric: tabular-nums to enforce rigid monospaced width footprints.
 
+Text Labels, Subtitles & Technical Translations
+Font Family: Assistant, sans-serif
 
+Sizing & Layout Rule: Enforce clear, flat styling constraints for combo definitions. Explicit description subtitles translating sequence metrics must sit directly beneath the primary numeric target boxes.
 
-\## 2. Core Functional Requirements
+4. Architectural Geometry & Spatial Scaling
+Structural Corner Contours
+Dashboard Blocks & Panes: Fixed 0.5rem (8px) boundary curvature radius.
 
-\- \*\*Dashboard Configuration Mode\*\*:
+Interactive Action Components / Stepper Inputs: Precision geometric 0.25rem (4px) block profiles. Avoid pill configurations.
 
-&#x20; - Intensity Selection Pane: Direct selection between ROOKIE (3 min work / 20s rest), PRO (5 min work / 30s rest), and CHAMP (10 min work / 60s rest).
+Layout Perimeter Controls
+Border Safety Margins: Maintain standard 32px desktop container padding limits to eliminate hardware display bezel clip risks.
 
-&#x20; - Round Allocation Controls: Increment/decrement steppers modifying target total rounds.
+5. Split Layout Configuration (Active HUD Mode)
+Geometry Profile: Absolute 50/50 horizontal split layout grid mapping the device screen. Content wrapping or structural line-breaks are strictly banned to prevent layout shifting.
 
-&#x20; - Contextual Metadata Display: Dynamically computed workout sequence duration calculation ("TOTAL TIME: MM:SS").
+Left Control Panel: Dedicated exclusively to tracking runtime data clocks. Isolates down-counter clocks and total session duration tracks.
 
-\- \*\*Active Telemetry Training Mode\*\*:
+Right Tactical Panel: Dedicated exclusively to detailing fighter configuration steps.
 
-&#x20; - Split-Panel View Layout: Fixed 50/50 horizontal width allocation. Left zone isolates countdown clocks; Right zone aggregates combination execution instructions.
+Top 66% Viewport Frame: High-visibility glass card rendering active combinations.
 
-&#x20; - State Synchronized Accents: Electric Cyan visualization during high-intensity intervals; Matrix Green breathing effects applied during scheduled rest cycles.
-
-&#x20; - Global Mute Interrupter: Persistence-configured UI interrupter preventing localized browser application sound output without capturing exclusive system hardware audio channels.
-
-
-
-\## 3. Core Training Engine \& Logic Specs
-
-\- \*\*Phase 1: Global Chrono Warmup Sequence\*\*:
-
-&#x20; - Execution Interval: Enforced for the exact initial 180 seconds of aggregate elapsed execution time.
-
-&#x20; - Display Interface: Left side renders down-counter; Right side displays text asset "BREATHE" / "GET READY".
-
-&#x20; - Combo Array Bypass: Pure linear routing. Suppresses random generator processing.
-
-\- \*\*Phase 2: Tactical Combination Array Shuffling\*\*:
-
-&#x20; - Core Processing Concept: "Deck of Cards" non-repeating constraint sequence logic.
-
-&#x20; - Functional Step 1: Clone master repository collection containing target boxing combination data models.
-
-&#x20; - Functional Step 2: Apply Fisher-Yates array permutation logic to randomize current active target matrix index orders.
-
-&#x20; - Functional Step 3: Iterate sequentially through permutation array paths, flashing current tactical indicators on a clean 60-second operational loop ticker.
-
-&#x20; - Functional Step 4: Enforce unique constraint rules preventing single-element re-processing until complete pool iteration returns exhaustion state flags. Trigger reshuffle sequence instantly on buffer drop.
-
-
-
-\## 4. Audio Processing Constraints
-
-\- \*\*Concurrent Coexistence Matrix\*\*:
-
-&#x20; - The PWA internal signal generator must operate asynchronously alongside external audio playback services (e.g., Spotify background streams).
-
-&#x20; - Suppress programmatic requests capturing explicit hardware Exclusive Audio Focus states.
-
-\- \*\*Hardware Trigger Compliance\*\*:
-
-&#x20; - Initialize, load, and warm browser underlying Web Audio Context subroutines immediately following explicit client interaction events (e.g., Target pointer tap action context detected on "START FIGHT" component node).
-
-
-
-\## 5. Localized Storage Scheme
-
-\- \*\*Variable Key Registers\*\*:
-
-&#x20; - `boxing\_current\_intensity`: Text string mapping current operational mode parameters (`ROOKIE` / `PRO` / `CHAMP`).
-
-&#x20; - `boxing\_allocated\_rounds`: Numerical allocation tracking intended iteration targets.
-
-&#x20; - `boxing\_system\_mute\_flag`: Boolean value indicating global app sound suppression.
-
+Lower 33% Viewport Frame: Secondary lower-opacity container tracking upcoming sequence changes.
