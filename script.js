@@ -229,14 +229,6 @@ const FIGHTER_ROUTINES = {
   }
 };
 
-// --- DIFFICULTY SETTINGS (FIXED ROUNDS) ---
-
-const CONFIG = {
-    'ROOKIE': { round: 180, rest: 20, defaultRounds: 8 },
-    'PRO':    { round: 300, rest: 30, defaultRounds: 6 },
-    'CHAMP':  { round: 600, rest: 60, defaultRounds: 4 }
-};
-
 // --- STATE MANAGEMENT ---
 const runtimeEngineState = {
   selectedFighterKey: 'TYSON',
@@ -325,7 +317,13 @@ const app = {
         const btn = document.getElementById('btn-' + lvl.toLowerCase());
         if(btn) btn.classList.add('active');
         
-        appState.settings.targetRounds = CONFIG[lvl].defaultRounds;
+        // Default rounds mapping based on legacy setup. Default to 6 if mapping fails.
+        const defaultRoundsMap = {
+            'ROOKIE': 8,
+            'PRO': 6,
+            'CHAMP': 4
+        };
+        appState.settings.targetRounds = defaultRoundsMap[lvl] || 6;
         
         document.getElementById('setupRoundCount').innerText = appState.settings.targetRounds;
         updateTotalTimePreview();
@@ -346,8 +344,7 @@ function updateTotalTimePreview() {
 }
 
 function calculateTotalTime() {
-    const cfg = CONFIG[appState.settings.intensity];
-    return 120 + (appState.settings.targetRounds * cfg.round) + ((appState.settings.targetRounds - 1) * cfg.rest); // 120s for warmup
+    return 120 + (appState.settings.targetRounds * 300) + ((appState.settings.targetRounds - 1) * 30); // 120s for warmup
 }
 
 // --- WORKOUT ENGINE ---
@@ -406,11 +403,10 @@ function handleEngineCoreTick() {
 
 function transitionWorkoutLifecyclePhase() {
     playSound('bell');
-    const cfg = CONFIG[appState.settings.intensity];
 
     if (runtimeEngineState.currentPhase === 'WARMUP') {
         runtimeEngineState.currentPhase = 'WORK';
-        runtimeEngineState.activePhaseSeconds = cfg.round;
+        runtimeEngineState.activePhaseSeconds = 300;
         runtimeEngineState.activeRoundIndex = 1;
     } else if (runtimeEngineState.currentPhase === 'WORK') {
         if (runtimeEngineState.activeRoundIndex >= appState.settings.targetRounds) {
@@ -418,10 +414,10 @@ function transitionWorkoutLifecyclePhase() {
             return;
         }
         runtimeEngineState.currentPhase = 'REST';
-        runtimeEngineState.activePhaseSeconds = cfg.rest;
+        runtimeEngineState.activePhaseSeconds = 30;
     } else if (runtimeEngineState.currentPhase === 'REST') {
         runtimeEngineState.currentPhase = 'WORK';
-        runtimeEngineState.activePhaseSeconds = cfg.round;
+        runtimeEngineState.activePhaseSeconds = 300;
         runtimeEngineState.activeRoundIndex++;
     }
 
@@ -450,6 +446,7 @@ function updateTimerUI() {
         
         let relativeMinuteIndex = Math.floor((300 - runtimeEngineState.activePhaseSeconds) / 60);
         if (relativeMinuteIndex < 0) relativeMinuteIndex = 0;
+        if (relativeMinuteIndex >= 5) relativeMinuteIndex = 4;
         let finalTargetIndex = ((runtimeEngineState.activeRoundIndex - 1) * 5) + relativeMinuteIndex;
 
         const currentCombo = routine[finalTargetIndex % routineLength].combo;
