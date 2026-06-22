@@ -19,10 +19,6 @@ body.rest-mode {
     font-variant-numeric: tabular-nums;
 }
 
-.text-xs {
-    font-family: 'Assistant', sans-serif;
-}
-
 /* Custom Component Rules not natively optimized by inline utilities */
 .diff-btn.active {
     background-color: rgba(255, 255, 255, 0.08);

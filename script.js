@@ -627,14 +627,18 @@ function resetApp() {
 }
 
 function renderStructuredComboHTML(comboString, descriptorText) {
-    const elements = comboString.split(/(\s+|-|▲|►|◄)/);
-    let parsedHTML = `<div class="flex items-center justify-center gap-4">`;
+    if (!comboString) return '';
+    const safeDescriptor = descriptorText || '';
+    const elements = comboString.split(/(\s+|-|▲|▼|►|◄)/);
+    let parsedHTML = '<div class="flex items-center justify-center gap-4">';
+
     elements.forEach(item => {
         const trimmed = item.trim();
         if (!trimmed) return;
-        if (["-", "▲", "►", "◄"].includes(trimmed)) {
+        if (["-", "▲", "▼", "►", "◄"].includes(trimmed)) {
             let iconName = "arrow_forward";
             if (trimmed === "▲") iconName = "keyboard_double_arrow_up";
+            if (trimmed === "▼") iconName = "keyboard_double_arrow_down";
             if (trimmed === "►") iconName = "keyboard_double_arrow_right";
             if (trimmed === "◄") iconName = "keyboard_double_arrow_left";
             parsedHTML += `<span class="material-symbols-outlined text-gray-500 text-2xl">${iconName}</span>`;
@@ -645,6 +649,7 @@ function renderStructuredComboHTML(comboString, descriptorText) {
                 </div>`;
         }
     });
-    parsedHTML += `</div><p class="font-['Assistant'] text-gray-400 text-center mt-4 text-xl">${descriptorText}</p>`;
+
+    parsedHTML += `</div><p class="font-['Assistant'] text-gray-400 text-center mt-4 text-xl">${safeDescriptor}</p>`;
     return parsedHTML;
 }
