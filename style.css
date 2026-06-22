@@ -61,3 +61,8 @@ body.rest-mode [class*="border-"][class*="theme-accent"] {
     width: 0px;
     height: 0px;
 }
+
+/* Force Assistant font for Hebrew focus text during recovery/warmup phases */
+body.rest-mode #nextPattern {
+    font-family: 'Assistant', sans-serif !important;
+}
