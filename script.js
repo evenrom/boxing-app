@@ -542,7 +542,7 @@ function renderStructuredComboHTML(comboString, descriptorText) {
             parsedHTML += `<span class="text-gray-600 text-5xl font-bold mx-1">-</span>`;
         } else if (/^\d+$/.test(trimmed)) {
             parsedHTML += `
-                <div class="flex flex-col items-center bg-[var(--surface-glass)] border-2 border-[var(--theme-accent)] px-6 py-3 rounded-lg min-w-[90px]">
+                <div class="flex flex-col items-center bg-[var(--surface-glass)] px-6 py-3 rounded-lg min-w-[90px]">
                     <span class="font-['Teko'] text-7xl text-white font-bold leading-none">${trimmed}</span>
                 </div>`;
         }
