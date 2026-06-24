@@ -66,3 +66,24 @@ body.rest-mode [class*="border-"][class*="theme-accent"] {
 body.rest-mode #nextPattern {
     font-family: 'Assistant', sans-serif !important;
 }
+
+/* מניעת שבירת שורות לקומבינציות ענקיות בטאבלט */
+.flex-wrap-none {
+    flex-wrap: nowrap !important;
+}
+
+#currentPattern {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+}
+
+/* הגדלת תצוגת ה"הבא בתור" */
+#nextPattern {
+    font-size: 2.5rem !important;
+    line-height: 1.2;
+    font-weight: bold;
+}

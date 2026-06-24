@@ -1,4 +1,5 @@
-const CACHE_NAME = 'boxing-pro-v3'; // Bumped version
+// Scan file: sw.js
+const CACHE_NAME = 'boxing-pro-v4'; // Bumped version to force tablet update
 const ASSETS = [
   'index.html',
   'style.css',

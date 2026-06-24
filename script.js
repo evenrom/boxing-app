@@ -1,43 +1,4 @@
-if (typeof document === 'undefined') {
-    globalThis.document = {
-        addEventListener: () => null,
-        getElementById: () => ({ innerText: '', style: {}, classList: { add: () => null, remove: () => null } }),
-        querySelectorAll: () => [],
-        querySelector: () => null,
-        body: { classList: { add: () => null, remove: () => null } }
-    };
-}
-if (typeof window === 'undefined') {
-    globalThis.window = globalThis;
-}
-if (typeof localStorage === 'undefined') {
-    globalThis.localStorage = {
-        getItem: () => null,
-        setItem: () => null,
-        removeItem: () => null
-    };
-}
-
-if (typeof document === 'undefined') {
-    global.document = {
-        addEventListener: () => null,
-        getElementById: () => ({ innerText: '', style: {}, classList: { add: () => null, remove: () => null } }),
-        querySelectorAll: () => [],
-        querySelector: () => null,
-        body: { classList: { add: () => null, remove: () => null } }
-    };
-}
-if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
-    global.localStorage = {
-        getItem: () => null,
-        setItem: () => null,
-        removeItem: () => null
-    };
-}
-
-// --- CONFIGURATION ---
-
-// --- AUDIO ASSETS ---
+// --- CONFIGURATION & AUDIO ASSETS ---
 const audioContextOptions = {
   bell: './assets/bell.mp3',
   minute: './assets/minute.mp3',
@@ -79,152 +40,153 @@ function playSound(name) {
         }
     }
 }
+
 const FIGHTER_ROUTINES = {
   TYSON: {
     name: "Mike Tyson",
     roundFocus: [
-      "חימום מובנה לשמירת טווח ומציאת מרחק",
+      "חימום: שמירת טווח",
       "כניסה לטווח ושינוי גובה",
-      "דגש אפרקטים (Peek-a-boo Style)",
+      "דגש אפרקטים",
       "לחץ והתחמקות מתוזמנת",
-      "עבודה גוף-ראש ועוצמה מתפרצת",
-      "שיא העומס (Volume Power)",
-      "סיבוב אליפות (עייפות קיצונית וכוח רצון)"
+      "גוף-ראש ועוצמה",
+      "שיא העומס",
+      "סיבוב אליפות"
     ],
     plan: [
-      { combo: "1", desc: "ג'אב בלבד לשמירת טווח" },
-      { combo: "2", desc: "קרוס בלבד למציאת מרחק" },
+      { combo: "1", desc: "ג'אב טווח" },
+      { combo: "2", desc: "קרוס מרחק" },
       { combo: "1-2", desc: "שילוב בסיסי" },
-      { combo: "1 ▲ 1", desc: "ג'אב, ירידה להגנה, ג'אב" },
-      { combo: "1-2-7-2", desc: "סגירת החימום עם כניסה ראשונה" },
-      { combo: "1 ▲ 3", desc: "ג'אב, ירידה (Slip), הוק שמאלי חזק" },
-      { combo: "2-4", desc: "קרוס, הוק ימני עוצמתי" },
-      { combo: "1 ◄ 1-2", desc: "צעד שמאלה, ג'אב-קרוס מהיר" },
-      { combo: "1-2 ▲ 3", desc: "ג'אב-קרוס, ירידה, הוק שמאלי לגוף/ראש" },
-      { combo: "3-4-3-4", desc: "רצף הוקים קרוב ומהיר" },
-      { combo: "1-7-3", desc: "ג'אב, אפרקט ימני, הוק שמאלי (קלאסי טייסון)" },
-      { combo: "2-7-4", desc: "קרוס, אפרקט שמאלי, הוק ימני" },
-      { combo: "1 ▲ 1-2-7-2", desc: "ג'אב, ירידה, ג'אב-קרוס-אפרקט-קרוס" },
+      { combo: "1 ▲ 1", desc: "ג'אב, חמיקה, ג'אב" },
+      { combo: "1-2-7-2", desc: "סגירת חימום" },
+      { combo: "1 ▲ 3", desc: "ג'אב, חמיקה, הוק שמאל" },
+      { combo: "2-4", desc: "קרוס, הוק ימין עוצמתי" },
+      { combo: "1 ◄ 1-2", desc: "צעד שמאל, ג'אב-קרוס" },
+      { combo: "1-2 ▲ 3", desc: "ג'אב-קרוס, חמיקה, הוק גוף" },
+      { combo: "3-4-3-4", desc: "הוקים מהירים בטווח קצר" },
+      { combo: "1-7-3", desc: "ג'אב, אפרקט, הוק קלאסי" },
+      { combo: "2-7-4", desc: "קרוס, אפרקט שמאל, הוק ימין" },
+      { combo: "1 ▲ 1-2-7-2", desc: "ג'אב, חמיקה, רצף כוח" },
       { combo: "1-2-7-4-2", desc: "קומבינציית כוח מתגלגלת" },
       { combo: "3-4-3-4-3-4", desc: "התפוצצות בטווח אפס" },
-      { combo: "1 ► 2-2", desc: "צעד ימינה, קרוס כפול" },
-      { combo: "1 ▲ 3-3", desc: "ג'אב, ירידה, הוק שמאלי כפול (גוף-ראש)" },
-      { combo: "2 ▲ 4-4", desc: "קרוס, ירידה, הוק ימני כפול" },
-      { combo: "1-2-7-3", desc: "ג'אב-קרוס, אפרקט, הוק מסיים" },
-      { combo: "1-3-7-3", desc: "רצף כוח שמאלי-ימני לסירוגין" },
-      { combo: "2-4-7-2-4", desc: "רצף כוח ארוך להרס הגנות" },
-      { combo: "1 ▲ 1", desc: "הטעיה למטה, כניסה WITH ג'אב" },
-      { combo: "1-2-3-7-2", desc: "קומבינציה שלמה מטווח בינוני לקרוב" },
+      { combo: "1 ► 2-2", desc: "צעד ימין, קרוס כפול" },
+      { combo: "1 ▲ 3-3", desc: "חמיקה, הוק כפול גוף-ראש" },
+      { combo: "2 ▲ 4-4", desc: "קרוס, חמיקה, הוק ימין כפול" },
+      { combo: "1-2-7-3", desc: "ג'אב-קרוס, אפרקט, הוק" },
+      { combo: "1-3-7-3", desc: "רצף כוח שמאלי-ימני" },
+      { combo: "2-4-7-2-4", desc: "רצף ארוך לשבירת הגנה" },
+      { combo: "1 ▲ 1", desc: "הטעיה למטה, ג'אב בכניסה" },
+      { combo: "1-2-3-7-2", desc: "טווח בינוני לקרוב" },
       { combo: "1-2-7-2", desc: "פיניש מהיר" },
-      { combo: "3-4-3-4", desc: "רצף כוח מתיש" },
-      { combo: "1-2-1-2-1-2", desc: "מטר ג'אב-קרוס רציף להסחת דעת" },
+      { combo: "3-4-3-4", desc: "רצף מתיש" },
+      { combo: "1-2-1-2-1-2", desc: "מטר ג'אב-קרוס להסחת דעת" },
       { combo: "1-2-7-4-2", desc: "מעבר מיידי למכות כוח" },
       { combo: "1-3-7-3", desc: "לחץ מתמיד" },
-      { combo: "2-4-7-4", desc: "סיומת חזקה עם הוק ימני" },
-      { combo: "1 ▲ 3-3", desc: "כניסה מתחת למכות של היריב" },
-      { combo: "1-2-3", desc: "קומבינציה קלאסית ויציבה" },
-      { combo: "1-7-3", desc: "כניסה אחרונה לאפרקט-הוק" },
+      { combo: "2-4-7-4", desc: "סיומת חזקה עם הוק" },
+      { combo: "1 ▲ 3-3", desc: "כניסה מתחת למכות יריב" },
+      { combo: "1-2-3", desc: "קלאסית יציבה" },
+      { combo: "1-7-3", desc: "אפרקט-הוק מסיים" },
       { combo: "2-4-7-2-4", desc: "פירוק הגנות אחרון" },
       { combo: "1 ▲ 1-2-7-2", desc: "תנועה ועוצמה משולבים" },
-      { combo: "1-2-1-2-1-2", desc: "דקה אחרונה: התפוצצות מהירות וכוח עד הבאזר" }
+      { combo: "1-2-1-2-1-2", desc: "דקה אחרונה: ספרינט כוח מוחלט" }
     ]
   },
   MAYWEATHER: {
     name: "Floyd Mayweather",
     roundFocus: [
-      "חימום מובנה - שילוב ישרים ותנועה בסיסית",
+      "חימום: ישרים ותנועה",
       "מהירות ותנועה היקפית",
       "קומבינציות ארוכות ומטעות",
-      "הגנה חכמה והתקפות נגד (Counter-Punching)",
-      "שליטה בקצב (Ring Generalship)",
+      "הגנה חכמה והתקפות נגד",
+      "שליטה בקצב הזירה",
       "נפח ועייפות מנטלית",
-      "סיבוב הגנה מוחלטת ויציאה קדימה"
+      "הגנה מוחלטת ויציאה קדימה"
     ],
     plan: [
-      { combo: "1", desc: "ג'אב בודד מהיר (Flicker Jab)" },
+      { combo: "1", desc: "ג'אב מהיר (Flicker)" },
       { combo: "2", desc: "קרוס מהיר לטווח ארוך" },
       { combo: "1-2", desc: "שילוב ישרים בסיסי" },
-      { combo: "1 ► 2-4", desc: "תנועה הצידה ויציאה עם קומבינציה" },
-      { combo: "1 ◄ 1-2", desc: "צעד שמאלה עם ג'אב כפול וקרוס" },
-      { combo: "1-1-2", desc: "ג'אב כפול מהיר, קרוס ישיר" },
-      { combo: "1 ► 2-2", desc: "צעד ימינה, קרוס מהיר כפול לטווח" },
-      { combo: "1-2 ► 4", desc: "ג'אב-קרוס, צעד ימינה, הוק חטוף" },
-      { combo: "1-2-3", desc: "שלשה קלאסית ומהירה" },
-      { combo: "2 ► 1-3", desc: "קרוס, צעד ימינה, ג'אב-הוק מהיר" },
-      { combo: "1-2-1-2-1-2", desc: "שש מכות ישרות ומהירות (עבודת נפח)" },
-      { combo: "1-2-3-7-2", desc: "קומבינציה ארוכה: ישרים, הוק, אפרקט, קרוס מסיים" },
-      { combo: "1 ◄ 1-2", desc: "תנועת רגליים מתמדת שמאלה" },
-      { combo: "1-2-7-3", desc: "ישרים, אפרקט מהיר, הוק מציק" },
-      { combo: "2-4-7-4", desc: "מענה מהיר מהיד האחורית" },
-      { combo: "1 ▲ 1", desc: "ג'אב, התחמקות לאחור/למטה, ג'אב חוזר" },
-      { combo: "1-2 ▲ 3", desc: "ישרים, משיכת גוף לאחור (Pull), הוק שמאלי מהיר" },
-      { combo: "2-4-7-2-4", desc: "רצף מכות קלות ומהירות להצפת היריב" },
-      { combo: "1 ► 2-4", desc: "יציאה מהקו, קרוס, הוק ימני" },
-      { combo: "1-1-2", desc: "חזרה לג'אב כפול וקרוס" },
-      { combo: "1-3-7-3", desc: "קומבינציה משתנה: ג'אב, הוק, אפרקט, הוק" },
-      { combo: "2 ► 1-3", desc: "קרוס, צעד הצידה, יציאה WITH ג'אב-הוק" },
-      { combo: "1-2-7-4-2", desc: "קומבינציה ארוכה ומורכבת לחיתוך זוויות" },
-      { combo: "1 ▲ 1-2-7-2", desc: "תנועת ראש מרובה תוך כדי התקפה" },
-      { combo: "3-4-3-4-3-4", desc: "רצף מכות קלות ומהירות לגוף ולראש" },
-      { combo: "1-2-1-2-1-2", desc: "שמירה על ידיים עסוקות ללא הפסקה" },
-      { combo: "1-2 ► 4", desc: "ג'אב קרוס ויציאה מהזווית של היריב" },
-      { combo: "1-2-3-7-2", desc: "החלפת הילוכים לקומבינציה ארוכה" },
-      { combo: "1 ◄ 1-2", desc: "הגנה דרך תנועת רגליים" },
-      { combo: "2-4", desc: "קרוס-הוק חטופים ומהירים" },
-      { combo: "1 ▲ 1", desc: "ניהול מרחק פסיבי-אקטיבי" },
-      { combo: "1-2-7-2", desc: "ארבע מכות ישרות ומהירות למרכז" },
+      { combo: "1 ► 2-4", desc: "תנועה הצידה ויציאה ברצף" },
+      { combo: "1 ◄ 1-2", desc: "צעד שמאל, ג'אב כפול וקרוס" },
+      { combo: "1-1-2", desc: "ג'אב כפול, קרוס ישיר" },
+      { combo: "1 ► 2-2", desc: "צעד ימין, קרוס כפול" },
+      { combo: "1-2 ► 4", desc: "ג'אב-קרוס, צעד ימין, הוק חטוף" },
+      { combo: "1-2-3", desc: "שלשה מהירה" },
+      { combo: "2 ► 1-3", desc: "קרוס, צעד ימין, ג'אב-הוק" },
+      { combo: "1-2-1-2-1-2", desc: "שש מכות ישרות (נפח)" },
+      { combo: "1-2-3-7-2", desc: "קומבינציה ארוכה ומסיימת" },
+      { combo: "1 ◄ 1-2", desc: "תנועה מתמדת שמאלה" },
+      { combo: "1-2-7-3", desc: "ישרים, אפרקט, הוק מהיר" },
+      { combo: "2-4-7-4", desc: "מענה מהיר מיד אחורית" },
+      { combo: "1 ▲ 1", desc: "ג'אב, התחמקות, ג'אב חוזר" },
+      { combo: "1-2 ▲ 3", desc: "ישרים, משיכה (Pull), הוק" },
+      { combo: "2-4-7-2-4", desc: "רצף קל להצפת היריב" },
+      { combo: "1 ► 2-4", desc: "יציאה מהקו, קרוס, הוק" },
+      { combo: "1-1-2", desc: "ג'אב כפול וקרוס" },
+      { combo: "1-3-7-3", desc: "קומבינציה משתנה" },
+      { combo: "2 ► 1-3", desc: "קרוס, צעד הצידה, ג'אב-הוק" },
+      { combo: "1-2-7-4-2", desc: "רצף לחיתוך זוויות" },
+      { combo: "1 ▲ 1-2-7-2", desc: "תנועת ראש מרובה בהתקפה" },
+      { combo: "3-4-3-4-3-4", desc: "רצף קל לגוף ולראש" },
+      { combo: "1-2-1-2-1-2", desc: "ידיים עסוקות ללא הפסקה" },
+      { combo: "1-2 ► 4", desc: "ג'אב קרוס ויציאה מזווית" },
+      { combo: "1-2-3-7-2", desc: "החלפת הילוכים לרצף ארוך" },
+      { combo: "1 ◄ 1-2", desc: "הגנה דרך רגליים" },
+      { combo: "2-4", desc: "קרוס-הוק חטופים" },
+      { combo: "1 ▲ 1", desc: "ניהול מרחק אקטיבי" },
+      { combo: "1-2-7-2", desc: "ארבע מכות ישרות למרכז" },
       { combo: "2-4-7-2-4", desc: "שבירת קצב אחרונה" },
-      { combo: "1 ► 2-4", desc: "צעד אחרון החוצה מהטווח" },
-      { combo: "1-2-1-2-1-2", desc: "דקה אחרונה: ספרינט מהירות מוחלט וקל עד הבאזר" }
+      { combo: "1 ► 2-4", desc: "צעד אחרון מחוץ לטווח" },
+      { combo: "1-2-1-2-1-2", desc: "דקה אחרונה: ספרינט מהירות" }
     ]
   },
   ALI: {
     name: "Muhammad Ali",
     roundFocus: [
-      "חימום מובנה - עבודת ישרים וניהול טווח ארוך",
-      "ריקוד זירה ותנועה היקפית (The Ali Shuffle)",
-      "שינוי קצב וג'אב מציק (The Flicker Jab)",
-      "לחימה בנסיגה (Fighting on the Backfoot)",
-      "התקפות מתפרצות (Showboating & Speed)",
-      "לחץ בסיבובים המאוחרים",
-      "סיבוב אליפות (עייפות ומהירות מנטלית)"
+      "חימום: ישרים וניהול טווח",
+      "ריקוד זירה ותנועה (Ali Shuffle)",
+      "שינוי קצב וג'אב מציק",
+      "לחימה בנסיגה (Backfoot)",
+      "התקפות מתפרצות ומהירות",
+      "לחץ בסיבובים מאוחרים",
+      "סיבוב אליפות ומאמץ מנטלי"
     ],
     plan: [
-      { combo: "1", desc: "ג'אב בודד מהיר (Flicker)" },
+      { combo: "1", desc: "ג'אב מהיר (Flicker)" },
       { combo: "2", desc: "קרוס ישיר ארוך" },
       { combo: "1-2", desc: "שילוב ישרים בסיסי" },
       { combo: "1-1-2", desc: "ג'אב כפול וקרוס" },
-      { combo: "1 ▲ 1", desc: "ג'אב, הטיית ראש לאחור, ג'אב חוזר" },
-      { combo: "1 ◄ 1-2", desc: "ג'אב, צעד שמאלה, ג'אב-קרוס מהיר" },
-      { combo: "1 ► 2-2", desc: "ג'אב, צעד ימינה, קרוס כפול לטווח" },
-      { combo: "1-2-1-2", desc: "ארבע מכות ישרות ומהירות מהמקום" },
-      { combo: "1-2 ► 4", desc: "ישרים, צעד ימינה ויציאה עם הוק חטוף" },
-      { combo: "3-4-3-4", desc: "רצף הוקים מהיר בגובה הראש" },
-      { combo: "1-1-1", desc: "ג'אב משולש מהיר להסחת דעת ומרחק" },
-      { combo: "1-2-3", desc: "שלשה קלאסית וחלקה" },
-      { combo: "2-4-7-4", desc: "מעבר מהיר למכות כוח מטווח ארוך" },
-      { combo: "1 ▲ 1-2-7-2", desc: "ג'אב, הטיית גוף, קומבינציה זורמת" },
-      { combo: "1-2-1-2-1-2", desc: "ספרינט מכות ישרות (נפח גבוה)" },
-      { combo: "1 ▲ 1", desc: "משיכת הראש לאחור (Lean back) וג'אב תוך כדי צעד אחורה" },
-      { combo: "2 ► 1-3", desc: "קרוס, צעד הצידה, ג'אב-הוק מהיר" },
-      { combo: "1-2-7-3", desc: "ישרים, אפרקט מפתיע, הוק מסיים" },
-      { combo: "1 ◄ 1-2", desc: "תנועה שמאלה לשבירת קו ההתקפה" },
-      { combo: "1-3-7-3", desc: "שילוב ידיים מהיר ומורכב" },
+      { combo: "1 ▲ 1", desc: "ג'אב, הטיית ראש, ג'אב" },
+      { combo: "1 ◄ 1-2", desc: "צעד שמאל, ג'אב-קרוס מהיר" },
+      { combo: "1 ► 2-2", desc: "צעד ימין, קרוס כפול" },
+      { combo: "1-2-1-2", desc: "ארבע מכות ישרות מהמקום" },
+      { combo: "1-2 ► 4", desc: "ישרים, צעד ימין, הוק חטוף" },
+      { combo: "3-4-3-4", desc: "רצף הוקים מהיר לראש" },
+      { combo: "1-1-1", desc: "ג'אב משולש להסחת דעת" },
+      { combo: "1-2-3", desc: "שלשה קלאסית חלקה" },
+      { combo: "2-4-7-4", desc: "מכות כוח מטווח ארוך" },
+      { combo: "1 ▲ 1-2-7-2", desc: "הטיית גוף וקומבינציה זורמת" },
+      { combo: "1-2-1-2-1-2", desc: "ספרינט ישרים (נפח גבוה)" },
+      { combo: "1 ▲ 1", desc: "משיכת ראש לאחור וצעד אחורה" },
+      { combo: "2 ► 1-3", desc: "קרוס, צעד הצידה, ג'אב-הוק" },
+      { combo: "1-2-7-3", desc: "ישרים, אפרקט מפתיע, הוק" },
+      { combo: "1 ◄ 1-2", desc: "תנועה שמאל לשבירת קו" },
+      { combo: "1-3-7-3", desc: "שילוב ידיים מהיר" },
       { combo: "1-2-1-2-1-2", desc: "מטר מכות מהירות לפנים" },
-      { combo: "2-4", desc: "קרוס והוק מהיר ויציאה החוצה" },
-      { combo: "1-2-3-7-2", desc: "קומבינציה שלמה שמתחילה מרחוק ומסתיימת קרוב" },
-      { combo: "1 ► 2-4", desc: "צעד ימינה, קרוס, הוק ימני" },
+      { combo: "2-4", desc: "קרוס והוק מהיר ויציאה" },
+      { combo: "1-2-3-7-2", desc: "מרחוק לקרוב ברצף שלם" },
+      { combo: "1 ► 2-4", desc: "צעד ימין, קרוס, הוק" },
       { combo: "3-4-3-4-3-4", desc: "התפוצצות הוקים קצרים" },
-      { combo: "1-1-2", desc: "חזרה לבסיס: ג'אב כפול אגרסיבי וקרוס" },
-      { combo: "1-2-7-4-2", desc: "רצף מכות ארוך שיוצר לחץ מנטלי" },
-      { combo: "1 ▲ 3", desc: "ג'אב, חמיקה הצידה, הוק שמאלי מהיר" },
+      { combo: "1-1-2", desc: "חזרה לבסיס: ג'אב כפול וקרוס" },
+      { combo: "1-2-7-4-2", desc: "רצף ארוך ליצירת לחץ" },
+      { combo: "1 ▲ 3", desc: "ג'אב, חמיקה, הוק מהיר" },
       { combo: "2-4-7-2-4", desc: "חילופי מהלכים מהירים" },
-      { combo: "1 ◄ 1-2", desc: "יציאה מהירה מהטווח של היריב" },
-      { combo: "1-1-1", desc: "שימוש בג'אב כדי להחזיק את המרחק" },
+      { combo: "1 ◄ 1-2", desc: "יציאה מהירה מטווח יריב" },
+      { combo: "1-1-1", desc: "ג'אב לשמירת מרחק" },
       { combo: "1-2-3", desc: "קומבינציה נקייה וחדה" },
       { combo: "1-2-7-2", desc: "ארבע מכות מהירות למרכז" },
-      { combo: "1 ► 2-4", desc: "צעד אחרון הצידה ושילוב מכות נגד" },
-      { combo: "1-2-1-2-1-2", desc: "דקה אחרונה: ספרינט ישרים מוחלט עד הבאזר האחרון" }
+      { combo: "1 ► 2-4", desc: "צעד הצידה ומכות נגד" },
+      { combo: "1-2-1-2-1-2", desc: "דקה אחרונה: ספרינט ישרים מוחלט" }
     ]
   }
 };
@@ -281,8 +243,6 @@ function loadSettings() {
         console.warn('Failed to parse boxing_system_settings', e);
     }
 }
-// --- INITIALIZATION ---
-
 
 document.addEventListener('DOMContentLoaded', () => {
     loadSettings();
@@ -290,14 +250,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const initialIntensity = appState.settings.intensity;
     app.selectDiff(initialIntensity);
     
-    // Service Worker Registration
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./sw.js')
             .then(reg => console.log('SW Registered', reg))
             .catch(err => console.log('SW Failed', err));
     }
 
-    // Event Listeners
     document.getElementById('muteBtn').onclick = toggleMute;
     document.getElementById('btn-start-fight').onclick = startWorkout;
     document.getElementById('pauseBtn').onclick = togglePause;
@@ -307,7 +265,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-plus').onclick = () => changeRounds(1);
 });
 
-// --- APP LOGIC ---
 const app = {
     selectDiff: (lvl) => {
         const validKeys = ['TYSON', 'MAYWEATHER', 'ALI'];
@@ -340,11 +297,8 @@ function updateTotalTimePreview() {
 }
 
 function calculateTotalTime() {
-    return 120 + (appState.settings.targetRounds * 300) + ((appState.settings.targetRounds - 1) * 30); // 120s for warmup
+    return 120 + (appState.settings.targetRounds * 300) + ((appState.settings.targetRounds - 1) * 30);
 }
-
-// --- WORKOUT ENGINE ---
-
 
 async function startWorkout() {
     await initializeAudioEngine();
@@ -458,11 +412,11 @@ function updateTimerUI() {
         
         if (runtimeEngineState.currentPhase === 'WARMUP') {
             if (status) status.innerText = "WARM UP";
-            if (currentPatternEl) currentPatternEl.innerText = "BREATHE";
+            if (currentPatternEl) currentPatternEl.innerHTML = `<div class="text-6xl font-bold tracking-wider text-[var(--theme-accent)]">BREATHE</div>`;
             if (nextPatternEl) nextPatternEl.innerText = "GET READY";
         } else if (runtimeEngineState.currentPhase === 'REST') {
             if (status) status.innerText = "REST";
-            if (currentPatternEl) currentPatternEl.innerText = "BREATHE";
+            if (currentPatternEl) currentPatternEl.innerHTML = `<div class="text-6xl font-bold tracking-wider text-[var(--theme-accent)]">BREATHE</div>`;
 
             const roundFocusArr = FIGHTER_ROUTINES[appState.settings.intensity].roundFocus;
             const focusText = `סיבוב ${runtimeEngineState.activeRoundIndex + 1}: ${roundFocusArr[runtimeEngineState.activeRoundIndex % roundFocusArr.length]}`;
@@ -470,8 +424,6 @@ function updateTimerUI() {
         }
     }
 }
-
-// --- DATA & SYNC ---
 
 function finishSession() {
     if (appState.engine.timer) clearInterval(appState.engine.timer);
@@ -500,7 +452,6 @@ function logWorkout(mins) {
         };
         history.push(newRecord);
         localStorage.setItem('boxing_workout_history', JSON.stringify(history));
-        console.log('Workout Logged Locally', newRecord);
     } catch(e) {
         console.warn('Failed to log workout to localStorage', e);
     }
@@ -519,9 +470,6 @@ function getWorkoutHistory() {
     return [];
 }
 
-
-// --- HELPERS ---
-
 function toggleMute() {
     appState.settings.isMuted = !appState.settings.isMuted;
     saveSettings();
@@ -535,25 +483,13 @@ function updateMuteIcon() {
         icon.style.opacity = appState.settings.isMuted ? '0.5' : '1';
     }
 }
-function playSound(name) {
-    if (!appState.settings.isMuted && audioCtx && audioBuffers[name]) {
-        try {
-            const source = audioCtx.createBufferSource();
-            source.buffer = audioBuffers[name];
-            source.connect(audioCtx.destination);
-            source.start(0);
-        } catch(e) {
-            console.warn("Failed to play sound: " + name, e);
-        }
-    }
-}
 
 function parseIcons(text) {
     if(!text) return '';
-    return text.replace(/▲/g,'<span class="material-symbols-outlined">keyboard_double_arrow_up</span>')
-                .replace(/▼/g,'<span class="material-symbols-outlined">keyboard_double_arrow_down</span>')
-                .replace(/◄/g,'<span class="material-symbols-outlined">keyboard_double_arrow_left</span>')
-                .replace(/►/g,'<span class="material-symbols-outlined">keyboard_double_arrow_right</span>');
+    return text.replace(/▲/g,'<span class="material-symbols-outlined text-xl">keyboard_double_arrow_up</span>')
+                .replace(/▼/g,'<span class="material-symbols-outlined text-xl">keyboard_double_arrow_down</span>')
+                .replace(/◄/g,'<span class="material-symbols-outlined text-xl">keyboard_double_arrow_left</span>')
+                .replace(/►/g,'<span class="material-symbols-outlined text-xl">keyboard_double_arrow_right</span>');
 }
 
 function formatTime(s) {
@@ -586,11 +522,12 @@ function resetApp() {
     location.reload();
 }
 
+// פונקציית הרינדור עודכנה לתצוגה ענקית (text-7xl למספרים, text-3xl לטקסט) ללא גלישת שורות
 function renderStructuredComboHTML(comboString, descriptorText) {
     if (!comboString) return '';
     const safeDescriptor = descriptorText || '';
     const elements = comboString.split(/(\s+|-|▲|▼|►|◄)/);
-    let parsedHTML = '<div class="flex items-center justify-center gap-4">';
+    let parsedHTML = '<div class="flex items-center justify-center gap-6 flex-wrap-none">';
 
     elements.forEach(item => {
         const trimmed = item.trim();
@@ -600,17 +537,17 @@ function renderStructuredComboHTML(comboString, descriptorText) {
             if (trimmed === "▲") iconName = "keyboard_double_arrow_up";
             if (trimmed === "▼") iconName = "keyboard_double_arrow_down";
             if (trimmed === "◄") iconName = "keyboard_double_arrow_left";
-            parsedHTML += `<span class="material-symbols-outlined text-gray-500 text-2xl">${iconName}</span>`;
+            parsedHTML += `<span class="material-symbols-outlined text-[var(--theme-accent)] text-5xl">${iconName}</span>`;
         } else if (trimmed === "-") {
-            parsedHTML += `<span class="text-gray-500 text-3xl font-bold mx-1">-</span>`;
+            parsedHTML += `<span class="text-gray-600 text-5xl font-bold mx-1">-</span>`;
         } else if (/^\d+$/.test(trimmed)) {
             parsedHTML += `
-                <div class="flex flex-col items-center bg-[var(--surface-glass)] border-[var(--glass-border)] px-4 py-2 rounded">
-                    <span class="font-['Teko'] text-5xl text-white font-bold">${trimmed}</span>
+                <div class="flex flex-col items-center bg-[var(--surface-glass)] border-2 border-[var(--theme-accent)] px-6 py-3 rounded-lg min-w-[90px]">
+                    <span class="font-['Teko'] text-7xl text-white font-bold leading-none">${trimmed}</span>
                 </div>`;
         }
     });
 
-    parsedHTML += `</div><p class="font-['Assistant'] text-gray-400 text-center mt-4 text-xl">${safeDescriptor}</p>`;
+    parsedHTML += `</div><p class="font-['Assistant'] text-gray-300 text-center mt-6 text-3xl tracking-wide font-bold">${safeDescriptor}</p>`;
     return parsedHTML;
 }
