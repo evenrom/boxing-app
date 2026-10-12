@@ -1,553 +1,252 @@
-// --- CONFIGURATION & AUDIO ASSETS ---
-const audioContextOptions = {
-  bell: './assets/bell.mp3',
-  minute: './assets/minute.mp3',
-  countdown: './assets/countdown.mp3'
-};
-const audioBuffers = {};
-let audioCtx = null;
-let audioEngineInitialized = false;
-
-async function initializeAudioEngine() {
-  if (audioEngineInitialized) return;
-  try {
-      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-      audioCtx = new AudioContextClass();
-      for (const [key, path] of Object.entries(audioContextOptions)) {
-          try {
-              const response = await fetch(path);
-              const arrayBuffer = await response.arrayBuffer();
-              audioBuffers[key] = await audioCtx.decodeAudioData(arrayBuffer);
-          } catch(e) {
-              console.warn("Failed to load audio asset: " + path, e);
-          }
-      }
-      audioEngineInitialized = true;
-  } catch(e) {
-      console.warn("Web Audio API not supported or failed to init", e);
-  }
+'use strict';
+const $ = id => document.getElementById(id);
+const settings = { intensity: 'TYSON', targetRounds: 7, isMuted: false };
+let workout = null, interval = null, previous = null, renderKey = '', wakeLock = null, wakePending = false;
+let audioCtx = null, audioLoading = null;
+const buffers = {}, sources = new Set(), notices = new Map();
+const formatTime = seconds => `${String(Math.floor(Math.max(0, seconds) / 60)).padStart(2, '0')}:${String(Math.floor(Math.max(0, seconds) % 60)).padStart(2, '0')}`;
+function notice(key, message) {
+  if (message) notices.set(key, message); else notices.delete(key);
+  $('notice').textContent = [...notices.values()].join(' ');
+  $('notice').hidden = !notices.size;
 }
-
-function playSound(name) {
-    if (!appState.settings.isMuted && audioCtx && audioBuffers[name]) {
-        try {
-            const source = audioCtx.createBufferSource();
-            source.buffer = audioBuffers[name];
-            source.connect(audioCtx.destination);
-            source.start(0);
-        } catch(e) {
-            console.warn("Failed to play sound: " + name, e);
-        }
-    }
-}
-
-const FIGHTER_ROUTINES = {
-  TYSON: {
-    name: "Mike Tyson",
-    roundFocus: [
-      "חימום: שמירת טווח",
-      "כניסה לטווח ושינוי גובה",
-      "דגש אפרקטים",
-      "לחץ והתחמקות מתוזמנת",
-      "גוף-ראש ועוצמה",
-      "שיא העומס",
-      "סיבוב אליפות"
-    ],
-    plan: [
-      { combo: "1", desc: "ג'אב טווח" },
-      { combo: "2", desc: "קרוס מרחק" },
-      { combo: "1-2", desc: "שילוב בסיסי" },
-      { combo: "1 ▲ 1", desc: "ג'אב, חמיקה, ג'אב" },
-      { combo: "1-2-7-2", desc: "סגירת חימום" },
-      { combo: "1 ▲ 3", desc: "ג'אב, חמיקה, הוק שמאל" },
-      { combo: "2-4", desc: "קרוס, הוק ימין עוצמתי" },
-      { combo: "1 ◄ 1-2", desc: "צעד שמאל, ג'אב-קרוס" },
-      { combo: "1-2 ▲ 3", desc: "ג'אב-קרוס, חמיקה, הוק גוף" },
-      { combo: "3-4-3-4", desc: "הוקים מהירים בטווח קצר" },
-      { combo: "1-7-3", desc: "ג'אב, אפרקט, הוק קלאסי" },
-      { combo: "2-7-4", desc: "קרוס, אפרקט שמאל, הוק ימין" },
-      { combo: "1 ▲ 1-2-7-2", desc: "ג'אב, חמיקה, רצף כוח" },
-      { combo: "1-2-7-4-2", desc: "קומבינציית כוח מתגלגלת" },
-      { combo: "3-4-3-4-3-4", desc: "התפוצצות בטווח אפס" },
-      { combo: "1 ► 2-2", desc: "צעד ימין, קרוס כפול" },
-      { combo: "1 ▲ 3-3", desc: "חמיקה, הוק כפול גוף-ראש" },
-      { combo: "2 ▲ 4-4", desc: "קרוס, חמיקה, הוק ימין כפול" },
-      { combo: "1-2-7-3", desc: "ג'אב-קרוס, אפרקט, הוק" },
-      { combo: "1-3-7-3", desc: "רצף כוח שמאלי-ימני" },
-      { combo: "2-4-7-2-4", desc: "רצף ארוך לשבירת הגנה" },
-      { combo: "1 ▲ 1", desc: "הטעיה למטה, ג'אב בכניסה" },
-      { combo: "1-2-3-7-2", desc: "טווח בינוני לקרוב" },
-      { combo: "1-2-7-2", desc: "פיניש מהיר" },
-      { combo: "3-4-3-4", desc: "רצף מתיש" },
-      { combo: "1-2-1-2-1-2", desc: "מטר ג'אב-קרוס להסחת דעת" },
-      { combo: "1-2-7-4-2", desc: "מעבר מיידי למכות כוח" },
-      { combo: "1-3-7-3", desc: "לחץ מתמיד" },
-      { combo: "2-4-7-4", desc: "סיומת חזקה עם הוק" },
-      { combo: "1 ▲ 3-3", desc: "כניסה מתחת למכות יריב" },
-      { combo: "1-2-3", desc: "קלאסית יציבה" },
-      { combo: "1-7-3", desc: "אפרקט-הוק מסיים" },
-      { combo: "2-4-7-2-4", desc: "פירוק הגנות אחרון" },
-      { combo: "1 ▲ 1-2-7-2", desc: "תנועה ועוצמה משולבים" },
-      { combo: "1-2-1-2-1-2", desc: "דקה אחרונה: ספרינט כוח מוחלט" }
-    ]
-  },
-  MAYWEATHER: {
-    name: "Floyd Mayweather",
-    roundFocus: [
-      "חימום: ישרים ותנועה",
-      "מהירות ותנועה היקפית",
-      "קומבינציות ארוכות ומטעות",
-      "הגנה חכמה והתקפות נגד",
-      "שליטה בקצב הזירה",
-      "נפח ועייפות מנטלית",
-      "הגנה מוחלטת ויציאה קדימה"
-    ],
-    plan: [
-      { combo: "1", desc: "ג'אב מהיר (Flicker)" },
-      { combo: "2", desc: "קרוס מהיר לטווח ארוך" },
-      { combo: "1-2", desc: "שילוב ישרים בסיסי" },
-      { combo: "1 ► 2-4", desc: "תנועה הצידה ויציאה ברצף" },
-      { combo: "1 ◄ 1-2", desc: "צעד שמאל, ג'אב כפול וקרוס" },
-      { combo: "1-1-2", desc: "ג'אב כפול, קרוס ישיר" },
-      { combo: "1 ► 2-2", desc: "צעד ימין, קרוס כפול" },
-      { combo: "1-2 ► 4", desc: "ג'אב-קרוס, צעד ימין, הוק חטוף" },
-      { combo: "1-2-3", desc: "שלשה מהירה" },
-      { combo: "2 ► 1-3", desc: "קרוס, צעד ימין, ג'אב-הוק" },
-      { combo: "1-2-1-2-1-2", desc: "שש מכות ישרות (נפח)" },
-      { combo: "1-2-3-7-2", desc: "קומבינציה ארוכה ומסיימת" },
-      { combo: "1 ◄ 1-2", desc: "תנועה מתמדת שמאלה" },
-      { combo: "1-2-7-3", desc: "ישרים, אפרקט, הוק מהיר" },
-      { combo: "2-4-7-4", desc: "מענה מהיר מיד אחורית" },
-      { combo: "1 ▲ 1", desc: "ג'אב, התחמקות, ג'אב חוזר" },
-      { combo: "1-2 ▲ 3", desc: "ישרים, משיכה (Pull), הוק" },
-      { combo: "2-4-7-2-4", desc: "רצף קל להצפת היריב" },
-      { combo: "1 ► 2-4", desc: "יציאה מהקו, קרוס, הוק" },
-      { combo: "1-1-2", desc: "ג'אב כפול וקרוס" },
-      { combo: "1-3-7-3", desc: "קומבינציה משתנה" },
-      { combo: "2 ► 1-3", desc: "קרוס, צעד הצידה, ג'אב-הוק" },
-      { combo: "1-2-7-4-2", desc: "רצף לחיתוך זוויות" },
-      { combo: "1 ▲ 1-2-7-2", desc: "תנועת ראש מרובה בהתקפה" },
-      { combo: "3-4-3-4-3-4", desc: "רצף קל לגוף ולראש" },
-      { combo: "1-2-1-2-1-2", desc: "ידיים עסוקות ללא הפסקה" },
-      { combo: "1-2 ► 4", desc: "ג'אב קרוס ויציאה מזווית" },
-      { combo: "1-2-3-7-2", desc: "החלפת הילוכים לרצף ארוך" },
-      { combo: "1 ◄ 1-2", desc: "הגנה דרך רגליים" },
-      { combo: "2-4", desc: "קרוס-הוק חטופים" },
-      { combo: "1 ▲ 1", desc: "ניהול מרחק אקטיבי" },
-      { combo: "1-2-7-2", desc: "ארבע מכות ישרות למרכז" },
-      { combo: "2-4-7-2-4", desc: "שבירת קצב אחרונה" },
-      { combo: "1 ► 2-4", desc: "צעד אחרון מחוץ לטווח" },
-      { combo: "1-2-1-2-1-2", desc: "דקה אחרונה: ספרינט מהירות" }
-    ]
-  },
-  ALI: {
-    name: "Muhammad Ali",
-    roundFocus: [
-      "חימום: ישרים וניהול טווח",
-      "ריקוד זירה ותנועה (Ali Shuffle)",
-      "שינוי קצב וג'אב מציק",
-      "לחימה בנסיגה (Backfoot)",
-      "התקפות מתפרצות ומהירות",
-      "לחץ בסיבובים מאוחרים",
-      "סיבוב אליפות ומאמץ מנטלי"
-    ],
-    plan: [
-      { combo: "1", desc: "ג'אב מהיר (Flicker)" },
-      { combo: "2", desc: "קרוס ישיר ארוך" },
-      { combo: "1-2", desc: "שילוב ישרים בסיסי" },
-      { combo: "1-1-2", desc: "ג'אב כפול וקרוס" },
-      { combo: "1 ▲ 1", desc: "ג'אב, הטיית ראש, ג'אב" },
-      { combo: "1 ◄ 1-2", desc: "צעד שמאל, ג'אב-קרוס מהיר" },
-      { combo: "1 ► 2-2", desc: "צעד ימין, קרוס כפול" },
-      { combo: "1-2-1-2", desc: "ארבע מכות ישרות מהמקום" },
-      { combo: "1-2 ► 4", desc: "ישרים, צעד ימין, הוק חטוף" },
-      { combo: "3-4-3-4", desc: "רצף הוקים מהיר לראש" },
-      { combo: "1-1-1", desc: "ג'אב משולש להסחת דעת" },
-      { combo: "1-2-3", desc: "שלשה קלאסית חלקה" },
-      { combo: "2-4-7-4", desc: "מכות כוח מטווח ארוך" },
-      { combo: "1 ▲ 1-2-7-2", desc: "הטיית גוף וקומבינציה זורמת" },
-      { combo: "1-2-1-2-1-2", desc: "ספרינט ישרים (נפח גבוה)" },
-      { combo: "1 ▲ 1", desc: "משיכת ראש לאחור וצעד אחורה" },
-      { combo: "2 ► 1-3", desc: "קרוס, צעד הצידה, ג'אב-הוק" },
-      { combo: "1-2-7-3", desc: "ישרים, אפרקט מפתיע, הוק" },
-      { combo: "1 ◄ 1-2", desc: "תנועה שמאל לשבירת קו" },
-      { combo: "1-3-7-3", desc: "שילוב ידיים מהיר" },
-      { combo: "1-2-1-2-1-2", desc: "מטר מכות מהירות לפנים" },
-      { combo: "2-4", desc: "קרוס והוק מהיר ויציאה" },
-      { combo: "1-2-3-7-2", desc: "מרחוק לקרוב ברצף שלם" },
-      { combo: "1 ► 2-4", desc: "צעד ימין, קרוס, הוק" },
-      { combo: "3-4-3-4-3-4", desc: "התפוצצות הוקים קצרים" },
-      { combo: "1-1-2", desc: "חזרה לבסיס: ג'אב כפול וקרוס" },
-      { combo: "1-2-7-4-2", desc: "רצף ארוך ליצירת לחץ" },
-      { combo: "1 ▲ 3", desc: "ג'אב, חמיקה, הוק מהיר" },
-      { combo: "2-4-7-2-4", desc: "חילופי מהלכים מהירים" },
-      { combo: "1 ◄ 1-2", desc: "יציאה מהירה מטווח יריב" },
-      { combo: "1-1-1", desc: "ג'אב לשמירת מרחק" },
-      { combo: "1-2-3", desc: "קומבינציה נקייה וחדה" },
-      { combo: "1-2-7-2", desc: "ארבע מכות מהירות למרכז" },
-      { combo: "1 ► 2-4", desc: "צעד הצידה ומכות נגד" },
-      { combo: "1-2-1-2-1-2", desc: "דקה אחרונה: ספרינט ישרים מוחלט" }
-    ]
-  }
-};
-
-// --- STATE MANAGEMENT ---
-const runtimeEngineState = {
-  configuredRoundsCount: 7,
-  activeSessionSeconds: 0,
-  activePhaseSeconds: 0,
-  currentPhase: 'SETUP',
-  activeRoundIndex: 1
-};
-
-const appState = {
-  settings: {
-    intensity: 'TYSON',
-    targetRounds: 7,
-    isMuted: false
-  },
-  engine: {
-    phase: 'SETUP',
-    currentRound: 1,
-    elapsedPhaseSeconds: 0,
-    elapsedTotalSeconds: 0,
-    workSecondsGlobal: 0,
-    timer: null
-  },
-  wakeLock: null
-};
-
-function saveSettings() {
-    try {
-        const settingsObj = {
-            intensity: appState.settings.intensity,
-            allocated_rounds: appState.settings.targetRounds,
-            system_mute_flag: appState.settings.isMuted
-        };
-        localStorage.setItem('boxing_system_settings', JSON.stringify(settingsObj));
-    } catch(e) {
-        console.warn('Failed to save boxing_system_settings', e);
-    }
-}
-
 function loadSettings() {
-    try {
-        const stored = localStorage.getItem('boxing_system_settings');
-        if (stored) {
-            const parsed = JSON.parse(stored);
-            if (parsed.intensity) appState.settings.intensity = parsed.intensity;
-            if (parsed.allocated_rounds) appState.settings.targetRounds = parsed.allocated_rounds;
-            if (parsed.system_mute_flag !== undefined) appState.settings.isMuted = parsed.system_mute_flag;
-        }
-    } catch(e) {
-        console.warn('Failed to parse boxing_system_settings', e);
+  try {
+    const data = JSON.parse(localStorage.getItem('boxing_system_settings'));
+    if (data && typeof data === 'object') {
+      if (Object.hasOwn(FIGHTER_ROUTINES, data.intensity)) settings.intensity = data.intensity;
+      settings.targetRounds = BoxingTimer.clampRounds(data.allocated_rounds);
+      settings.isMuted = data.system_mute_flag === true;
     }
+  } catch { /* A corrupt or unavailable store must not prevent training. */ }
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-    loadSettings();
-    updateMuteIcon();
-    const initialIntensity = appState.settings.intensity;
-    app.selectDiff(initialIntensity);
-    
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js')
-            .then(reg => console.log('SW Registered', reg))
-            .catch(err => console.log('SW Failed', err));
+function saveSettings() {
+  try { localStorage.setItem('boxing_system_settings', JSON.stringify({ intensity: settings.intensity, allocated_rounds: settings.targetRounds, system_mute_flag: settings.isMuted })); } catch { /* Preferences are optional. */ }
+}
+function renderSettings() {
+  document.querySelectorAll('[data-fighter]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.fighter === settings.intensity)));
+  $('setupRoundCount').textContent = settings.targetRounds;
+  $('totalTimePreview').textContent = formatTime(BoxingTimer.totalSeconds(settings.targetRounds));
+  $('btn-minus').disabled = settings.targetRounds === 1;
+  $('btn-plus').disabled = settings.targetRounds === 20;
+  $('muteBtn').textContent = settings.isMuted ? 'Sound off' : 'Sound on';
+  $('muteBtn').setAttribute('aria-pressed', String(settings.isMuted));
+  $('muteBtn').setAttribute('aria-label', settings.isMuted ? 'Unmute workout cues' : 'Mute workout cues');
+}
+// Called directly inside a gesture: create/resume before any asynchronous fetch.
+function prepareAudio() {
+  if (settings.isMuted) return;
+  try {
+    if ('audioSession' in navigator) { try { navigator.audioSession.type = 'ambient'; } catch {} }
+    if (!audioCtx) {
+      const Context = window.AudioContext || window.webkitAudioContext;
+      if (!Context) throw new Error('Audio unavailable');
+      audioCtx = new Context();
+      audioCtx.addEventListener('statechange', () => {
+        if (workout && !settings.isMuted) notice('audio', audioCtx.state === 'running' ? '' : 'Sound is interrupted. Tap Sound off, then Sound on to restore cues.');
+      });
     }
-
-    document.getElementById('muteBtn').onclick = toggleMute;
-    document.getElementById('btn-start-fight').onclick = startWorkout;
-    document.getElementById('pauseBtn').onclick = togglePause;
-    document.getElementById('stopBtn').onclick = endWorkout;
-    document.getElementById('btn-restart').onclick = resetApp;
-    document.getElementById('btn-minus').onclick = () => changeRounds(-1);
-    document.getElementById('btn-plus').onclick = () => changeRounds(1);
-});
-
-const app = {
-    selectDiff: (lvl) => {
-        const validKeys = ['TYSON', 'MAYWEATHER', 'ALI'];
-        const sanitizedLvl = validKeys.includes(lvl) ? lvl : 'TYSON';
-
-        appState.settings.intensity = sanitizedLvl;
-
-        document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
-        const btn = document.getElementById('btn-' + sanitizedLvl.toLowerCase());
-        if(btn) btn.classList.add('active');
-        
-        const setupRoundCountEl = document.getElementById('setupRoundCount');
-        if (setupRoundCountEl) setupRoundCountEl.innerText = appState.settings.targetRounds;
-
-        updateTotalTimePreview();
-        saveSettings();
-    }
-};
-
-function changeRounds(delta) {
-    appState.settings.targetRounds = Math.max(1, appState.settings.targetRounds + delta);
-    document.getElementById('setupRoundCount').innerText = appState.settings.targetRounds;
-    updateTotalTimePreview();
-    saveSettings();
+    const resumed = audioCtx.resume();
+    resumed.then(() => notice('audio', '')).catch(() => notice('audio', 'Sound is unavailable. Tap Sound off, then Sound on to retry.'));
+    if (!audioLoading) audioLoading = Promise.all(['bell', 'minute'].map(async name => {
+      try {
+        const response = await fetch(`./assets/${name}.mp3`);
+        if (!response.ok) throw new Error('Missing cue');
+        buffers[name] = await audioCtx.decodeAudioData(await response.arrayBuffer());
+      } catch { /* Synthesized bell is available when a local sample cannot load. */ }
+    }));
+    return resumed;
+  } catch { notice('audio', 'Audio cues are unavailable in this browser. The visual countdown will still run.'); }
 }
-
-function updateTotalTimePreview() {
-    const total = calculateTotalTime();
-    document.getElementById('totalTimePreview').innerText = formatTime(total);
+function stopSounds() {
+  for (const source of sources) { try { source.stop(); } catch {} }
+  sources.clear();
 }
-
-function calculateTotalTime() {
-    return 120 + (appState.settings.targetRounds * 300) + ((appState.settings.targetRounds - 1) * 30);
+function playSound(name) {
+  if (settings.isMuted || !audioCtx || audioCtx.state !== 'running') return;
+  stopSounds();
+  const now = audioCtx.currentTime;
+  const gain = audioCtx.createGain();
+  gain.connect(audioCtx.destination);
+  let source;
+  if (buffers[name]) {
+    source = audioCtx.createBufferSource(); source.buffer = buffers[name];
+    const duration = Math.min(source.buffer.duration, name === 'minute' ? 1.2 : 2);
+    gain.gain.setValueAtTime(.65, now);
+    gain.gain.setValueAtTime(.65, now + Math.max(0, duration - .1));
+    gain.gain.linearRampToValueAtTime(0, now + duration);
+    source.connect(gain); source.start(now); source.stop(now + duration);
+  } else {
+    source = audioCtx.createOscillator(); source.type = 'sine';
+    source.frequency.value = name === 'tick' ? 880 : 1250;
+    const duration = name === 'tick' ? .12 : .8;
+    gain.gain.setValueAtTime(.0001, now);
+    gain.gain.exponentialRampToValueAtTime(.3, now + .008);
+    gain.gain.exponentialRampToValueAtTime(.0001, now + duration);
+    source.connect(gain); source.start(now); source.stop(now + duration);
+  }
+  sources.add(source);
+  source.onended = () => {
+    sources.delete(source); source.disconnect(); gain.disconnect();
+    if (!workout && !sources.size) audioCtx.suspend().catch(() => {});
+  };
 }
-
-async function startWorkout() {
-    await initializeAudioEngine();
-
-    runtimeEngineState.currentPhase = 'WARMUP';
-    runtimeEngineState.activePhaseSeconds = 120;
-    runtimeEngineState.activeRoundIndex = 1;
-    runtimeEngineState.activeSessionSeconds = calculateTotalTime();
-
-    appState.engine.phase = 'warmup';
-    appState.engine.currentRound = 1;
-    appState.engine.elapsedPhaseSeconds = 120;
-    appState.engine.workSecondsGlobal = 0;
-    appState.engine.elapsedTotalSeconds = runtimeEngineState.activeSessionSeconds;
-    
-    document.getElementById('setup-screen').style.display = 'none';
-    document.getElementById('timer-screen').style.display = 'flex';
-    
-    requestWakeLock();
-    playSound('bell');
-    
-    if (appState.engine.timer) clearInterval(appState.engine.timer);
-    appState.engine.timer = setInterval(handleEngineCoreTick, 1000);
-    updateTimerUI();
-}
-
-function handleEngineCoreTick() {
-    if (document.getElementById('pauseBtn').innerText === "RESUME") return;
-
-    runtimeEngineState.activePhaseSeconds--;
-    runtimeEngineState.activeSessionSeconds--;
-    
-    appState.engine.elapsedPhaseSeconds = runtimeEngineState.activePhaseSeconds;
-    appState.engine.elapsedTotalSeconds = runtimeEngineState.activeSessionSeconds;
-
-    if (runtimeEngineState.currentPhase === 'WORK') {
-        appState.engine.workSecondsGlobal++;
-
-        if (runtimeEngineState.activePhaseSeconds > 0 && runtimeEngineState.activePhaseSeconds % 60 === 0) {
-            playSound('minute');
-        }
-    }
-
-    if (runtimeEngineState.activePhaseSeconds <= 0) {
-        transitionWorkoutLifecyclePhase();
-    }
-    
-    if (runtimeEngineState.activePhaseSeconds === 10) playSound('countdown');
-
-    updateTimerUI();
-}
-
-function transitionWorkoutLifecyclePhase() {
-    playSound('bell');
-
-    if (runtimeEngineState.currentPhase === 'WARMUP') {
-        runtimeEngineState.currentPhase = 'WORK';
-        runtimeEngineState.activePhaseSeconds = 300;
-        runtimeEngineState.activeRoundIndex = 1;
-    } else if (runtimeEngineState.currentPhase === 'WORK') {
-        if (runtimeEngineState.activeRoundIndex >= appState.settings.targetRounds) {
-            finishSession();
-            return;
-        }
-        runtimeEngineState.currentPhase = 'REST';
-        runtimeEngineState.activePhaseSeconds = 30;
-    } else if (runtimeEngineState.currentPhase === 'REST') {
-        runtimeEngineState.currentPhase = 'WORK';
-        runtimeEngineState.activePhaseSeconds = 300;
-        runtimeEngineState.activeRoundIndex++;
-    }
-
-    appState.engine.phase = runtimeEngineState.currentPhase.toLowerCase();
-    appState.engine.currentRound = runtimeEngineState.activeRoundIndex;
-    appState.engine.elapsedPhaseSeconds = runtimeEngineState.activePhaseSeconds;
-}
-
-function updateTimerUI() {
-    const mainTimer = document.getElementById('mainTimer');
-    const totalTimer = document.getElementById('totalTimer');
-    if (mainTimer) mainTimer.innerText = formatTime(runtimeEngineState.activePhaseSeconds);
-    if (totalTimer) totalTimer.innerText = formatTime(runtimeEngineState.activeSessionSeconds);
-    
-    const status = document.getElementById('statusText');
-    const currentPatternEl = document.getElementById('currentPattern');
-    const nextPatternEl = document.getElementById('nextPattern');
-    const body = document.body;
-
-    if (runtimeEngineState.currentPhase === 'WORK') {
-        body.classList.remove('rest-mode');
-        if (status) status.innerText = 'ROUND ' + runtimeEngineState.activeRoundIndex;
-        
-        const routine = FIGHTER_ROUTINES[appState.settings.intensity].plan;
-        const routineLength = routine.length;
-        
-        let relativeMinuteIndex = Math.floor((300 - runtimeEngineState.activePhaseSeconds) / 60);
-        if (relativeMinuteIndex < 0) relativeMinuteIndex = 0;
-        if (relativeMinuteIndex >= 5) relativeMinuteIndex = 4;
-        let finalTargetIndex = ((runtimeEngineState.activeRoundIndex - 1) * 5) + relativeMinuteIndex;
-
-        const currentCombo = routine[finalTargetIndex % routineLength].combo;
-        const nextCombo = routine[(finalTargetIndex + 1) % routineLength].combo;
-
-        if (currentPatternEl) {
-            currentPatternEl.innerHTML = renderStructuredComboHTML(currentCombo, routine[finalTargetIndex % routineLength].desc);
-        }
-        if (nextPatternEl) nextPatternEl.innerHTML = parseIcons(nextCombo);
-        
-    } else {
-        body.classList.add('rest-mode');
-        
-        if (runtimeEngineState.currentPhase === 'WARMUP') {
-            if (status) status.innerText = "WARM UP";
-            if (currentPatternEl) currentPatternEl.innerHTML = `<div class="text-6xl font-bold tracking-wider text-[var(--theme-accent)]">BREATHE</div>`;
-            if (nextPatternEl) nextPatternEl.innerText = "GET READY";
-        } else if (runtimeEngineState.currentPhase === 'REST') {
-            if (status) status.innerText = "REST";
-            if (currentPatternEl) currentPatternEl.innerHTML = `<div class="text-6xl font-bold tracking-wider text-[var(--theme-accent)]">BREATHE</div>`;
-
-            const roundFocusArr = FIGHTER_ROUTINES[appState.settings.intensity].roundFocus;
-            const focusText = `סיבוב ${runtimeEngineState.activeRoundIndex + 1}: ${roundFocusArr[runtimeEngineState.activeRoundIndex % roundFocusArr.length]}`;
-            if (nextPatternEl) nextPatternEl.innerText = focusText;
-        }
-    }
-}
-
-function finishSession() {
-    if (appState.engine.timer) clearInterval(appState.engine.timer);
-    if (appState.wakeLock) appState.wakeLock.release();
-
-    const totalDurationMin = Math.round(appState.engine.workSecondsGlobal / 60);
-    if (totalDurationMin >= 1) {
-        logWorkout(totalDurationMin);
-    }
-
-    document.getElementById('timer-screen').style.display = 'none';
-    document.getElementById('finish-screen').style.display = 'flex';
-    document.getElementById('finishRoundsVal').innerText = appState.settings.targetRounds;
-}
-
-function logWorkout(mins) {
-    if (mins < 1) return;
-    try {
-        const history = getWorkoutHistory();
-        const newRecord = {
-            workout_id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(),
-            timestamp: new Date().toISOString(),
-            intensity: appState.settings.intensity,
-            rounds_completed: appState.engine.currentRound,
-            duration_minutes: mins
-        };
-        history.push(newRecord);
-        localStorage.setItem('boxing_workout_history', JSON.stringify(history));
-    } catch(e) {
-        console.warn('Failed to log workout to localStorage', e);
-    }
-}
-
-function getWorkoutHistory() {
-    try {
-        const stored = localStorage.getItem('boxing_workout_history');
-        if (stored) {
-            const parsed = JSON.parse(stored);
-            if (Array.isArray(parsed)) return parsed;
-        }
-    } catch(e) {
-        console.warn('Failed to parse boxing_workout_history', e);
-    }
-    return [];
-}
-
-function toggleMute() {
-    appState.settings.isMuted = !appState.settings.isMuted;
-    saveSettings();
-    updateMuteIcon();
-}
-
-function updateMuteIcon() {
-    const icon = document.querySelector('#muteBtn span');
-    if(icon) {
-        icon.innerText = appState.settings.isMuted ? 'volume_off' : 'volume_up';
-        icon.style.opacity = appState.settings.isMuted ? '0.5' : '1';
-    }
-}
-
-function parseIcons(text) {
-    if(!text) return '';
-    return text.replace(/▲/g,'<span class="material-symbols-outlined text-xl">keyboard_double_arrow_up</span>')
-                .replace(/▼/g,'<span class="material-symbols-outlined text-xl">keyboard_double_arrow_down</span>')
-                .replace(/◄/g,'<span class="material-symbols-outlined text-xl">keyboard_double_arrow_left</span>')
-                .replace(/►/g,'<span class="material-symbols-outlined text-xl">keyboard_double_arrow_right</span>');
-}
-
-function formatTime(s) {
-    if (s < 0) s = 0;
-    const m = Math.floor(s / 60);
-    const sec = s % 60;
-    return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
-}
-
 async function requestWakeLock() {
-    if ('wakeLock' in navigator) {
-        try { appState.wakeLock = await navigator.wakeLock.request('screen'); } catch(e){}
-    }
-}
-
-function togglePause() {
-    const btn = document.getElementById('pauseBtn');
-    if (btn.innerText === "PAUSE") {
-        btn.innerText = "RESUME";
-    } else {
-        btn.innerText = "PAUSE";
-    }
-}
-
-function endWorkout() {
-    finishSession(); 
-}
-
-function resetApp() {
-    location.reload();
-}
-
-// פונקציית הרינדור עודכנה לתצוגה ענקית (text-7xl למספרים, text-3xl לטקסט) ללא גלישת שורות
-function renderStructuredComboHTML(comboString, descriptorText) {
-    if (!comboString) return '';
-    const safeDescriptor = descriptorText || '';
-    const elements = comboString.split(/(\s+|-|▲|▼|►|◄)/);
-    let parsedHTML = '<div class="flex items-center justify-center gap-6 flex-wrap-none">';
-
-    elements.forEach(item => {
-        const trimmed = item.trim();
-        if (!trimmed) return;
-        if (["▲", "▼", "►", "◄"].includes(trimmed)) {
-            let iconName = "keyboard_double_arrow_right";
-            if (trimmed === "▲") iconName = "keyboard_double_arrow_up";
-            if (trimmed === "▼") iconName = "keyboard_double_arrow_down";
-            if (trimmed === "◄") iconName = "keyboard_double_arrow_left";
-            parsedHTML += `<span class="material-symbols-outlined text-[var(--theme-accent)] text-5xl">${iconName}</span>`;
-        } else if (trimmed === "-") {
-            parsedHTML += `<span class="text-gray-600 text-5xl font-bold mx-1">-</span>`;
-        } else if (/^\d+$/.test(trimmed)) {
-            parsedHTML += `
-                <div class="flex flex-col items-center bg-[var(--surface-glass)] px-6 py-3 rounded-lg min-w-[90px]">
-                    <span class="font-['Teko'] text-7xl text-white font-bold leading-none">${trimmed}</span>
-                </div>`;
-        }
+  if (!workout || document.visibilityState !== 'visible' || wakeLock || wakePending) return;
+  if (!navigator.wakeLock) { $('screenStatus').textContent = 'SCREEN LOCK UNAVAILABLE'; notice('wake', 'Screen wake lock is unavailable. Keep the screen awake in your tablet settings.'); return; }
+  wakePending = true;
+  try {
+    const lock = await navigator.wakeLock.request('screen');
+    if (!workout || document.visibilityState !== 'visible') { await lock.release(); return; }
+    wakeLock = lock;
+    $('screenStatus').textContent = '● SCREEN STAYS ON'; notice('wake', '');
+    lock.addEventListener('release', () => {
+      if (wakeLock !== lock) return;
+      wakeLock = null;
+      if (workout) { $('screenStatus').textContent = 'SCREEN LOCK RELEASED'; if (document.visibilityState === 'visible') notice('wake', 'Screen wake lock was released. Tap the screen to retry, or adjust tablet sleep settings.'); }
     });
-
-    parsedHTML += `</div><p class="font-['Assistant'] text-gray-300 text-center mt-6 text-3xl tracking-wide font-bold">${safeDescriptor}</p>`;
-    return parsedHTML;
+  } catch { if (workout) { $('screenStatus').textContent = 'SCREEN LOCK UNAVAILABLE'; notice('wake', 'Screen wake lock was denied. Check battery saver and tablet sleep settings.'); } }
+  finally { wakePending = false; }
 }
+function releaseWakeLock() {
+  const lock = wakeLock; wakeLock = null;
+  if (lock) lock.release().catch(() => {});
+  $('screenStatus').textContent = 'READY WHEN YOU ARE'; notice('wake', '');
+}
+function showScreen(name) { ['setup', 'timer', 'finish'].forEach(id => { $(`${id}-screen`).hidden = id !== name; }); }
+function startWorkout() {
+  if (workout) return;
+  const audioReady = prepareAudio();
+  workout = new BoxingTimer.Workout(settings.targetRounds);
+  const session = workout;
+  audioReady?.then(() => {
+    if (workout === session && !session.paused && session.read().elapsed < 1) playSound('bell');
+  }).catch(() => {});
+  previous = workout.read(); renderKey = '';
+  showScreen('timer'); requestWakeLock();
+  renderWorkout(previous);
+  interval = setInterval(tick, 100);
+  $('pauseBtn').focus();
+}
+function tick() {
+  if (!workout || workout.paused) return;
+  const current = workout.read();
+  const sound = BoxingTimer.cue(previous, current);
+  if (sound) playSound(sound);
+  previous = current;
+  if (current.phase === 'done') { finishSession(current, true); return; }
+  renderWorkout(current);
+}
+function renderCombo(combo) {
+  const row = document.createElement('div'); row.className = 'combo-sequence';
+  row.setAttribute('aria-label', combo);
+  for (const token of combo.match(/\d+|[-▲◄►]/g) || []) {
+    const span = document.createElement('span');
+    span.className = /^\d+$/.test(token) ? 'combo-token' : token === '-' ? 'combo-dash' : 'combo-move';
+    span.textContent = token; row.append(span);
+  }
+  $('currentPattern').replaceChildren(row);
+}
+function renderWorkout(state) {
+  document.body.dataset.phase = state.phase;
+  document.body.classList.toggle('is-countdown', state.remaining <= 10);
+  document.body.classList.toggle('is-paused', workout.paused);
+  $('pauseLabel').hidden = !workout.paused;
+  $('pauseBtn').textContent = workout.paused ? '▶ Resume' : 'Ⅱ Pause';
+  $('mainTimer').textContent = formatTime(state.remaining);
+  $('totalTimer').textContent = formatTime(state.totalRemaining);
+  $('phaseProgress').style.width = `${state.remaining / state.duration * 100}%`;
+  $('completedIndicator').textContent = `${state.completed} / ${state.rounds} COMPLETE`;
+  $('minuteTimer').textContent = state.phase === 'work' ? `${formatTime(state.minuteRemaining)} LEFT` : '';
+  const key = `${state.phase}-${state.round}-${state.minute}`;
+  if (key === renderKey) return;
+  renderKey = key;
+  const routine = FIGHTER_ROUTINES[settings.intensity];
+  $('workoutStyle').textContent = routine.name.toUpperCase();
+  $('roundIndicator').textContent = state.phase === 'warmup' ? `${state.rounds} ROUNDS AHEAD` : `ROUND ${state.round} / ${state.rounds}`;
+  $('statusText').textContent = state.phase === 'work' ? `ROUND ${String(state.round).padStart(2, '0')}` : state.phase === 'rest' ? 'RECOVER' : 'WARM-UP';
+  $('minuteSteps').replaceChildren();
+  $('nextLabel').textContent = 'UP NEXT';
+  if (state.phase === 'work') {
+    const drill = routine.plan[state.routineIndex % routine.plan.length];
+    renderCombo(drill.combo); $('currentDescription').textContent = drill.desc;
+    $('drillLabel').textContent = `MINUTE ${state.minute + 1} OF 5`;
+    for (let i = 0; i < 5; i++) { const step = document.createElement('span'); step.className = i <= state.minute ? 'active' : ''; $('minuteSteps').append(step); }
+    $('minuteSteps').setAttribute('aria-label', `Minute ${state.minute + 1} of 5`);
+    $('roundFocus').textContent = routine.roundFocus[(state.round - 1) % routine.roundFocus.length];
+    if (state.minute === 4) {
+      $('nextPattern').textContent = state.round === state.rounds ? 'Session complete' : '30-second recovery';
+      $('nextDescription').textContent = state.round === state.rounds ? 'Finish strong. This is your final minute.' : 'Breathe. Reset. Get ready for the next round.';
+    } else {
+      const next = routine.plan[(state.routineIndex + 1) % routine.plan.length];
+      $('nextPattern').textContent = next.combo; $('nextPattern').dir = 'ltr'; $('nextDescription').textContent = next.desc;
+    }
+  } else {
+    const nextRound = state.phase === 'rest' ? state.round + 1 : 1;
+    const next = routine.plan[((nextRound - 1) * 5) % routine.plan.length];
+    $('drillLabel').textContent = state.phase === 'rest' ? 'EARN YOUR RECOVERY' : 'BEFORE THE BELL';
+    $('currentPattern').textContent = state.phase === 'rest' ? 'Breathe.' : 'Get loose.';
+    $('currentDescription').textContent = state.phase === 'rest' ? 'Relax your shoulders. Control your breathing.' : 'Light footwork. Loose shoulders. Find your rhythm.';
+    $('nextLabel').textContent = `UP NEXT · ROUND ${nextRound}`;
+    $('nextPattern').textContent = next.combo; $('nextPattern').dir = 'ltr'; $('nextDescription').textContent = next.desc;
+    $('roundFocus').textContent = routine.roundFocus[(nextRound - 1) % routine.roundFocus.length];
+  }
+}
+function togglePause() {
+  if (!workout) return;
+  if (workout.paused) { prepareAudio(); workout.resume(); previous = workout.read(); requestWakeLock(); }
+  else { tick(); if (!workout) return; workout.pause(); stopSounds(); }
+  renderWorkout(workout.read());
+}
+function finishSession(state, complete) {
+  clearInterval(interval); interval = null; workout = null; previous = null;
+  if (!complete) stopSounds();
+  if (!sources.size && audioCtx) audioCtx.suspend().catch(() => {});
+  releaseWakeLock(); notice('audio', '');
+  document.body.dataset.phase = ''; document.body.classList.remove('is-paused', 'is-countdown');
+  $('finishTitle').textContent = complete ? 'Session complete.' : 'Session ended.';
+  $('finishLevelText').textContent = FIGHTER_ROUTINES[settings.intensity].name + ' · ' + (complete ? 'All rounds in the bag.' : 'Every minute counts.');
+  $('finishRoundsVal').textContent = `${state.completed} / ${state.rounds}`;
+  $('finishDuration').textContent = formatTime(Math.floor(state.elapsed));
+  showScreen('finish'); $('btn-restart').focus();
+}
+let pausedBeforeDialog = false;
+$('stopBtn').addEventListener('click', () => {
+  if (!workout) return;
+  tick(); if (!workout) return;
+  pausedBeforeDialog = workout.paused;
+  workout.pause(); stopSounds(); renderWorkout(workout.read());
+  $('endDialog').returnValue = 'continue'; $('endDialog').showModal();
+});
+$('endDialog').addEventListener('close', () => {
+  if (!workout) return;
+  if ($('endDialog').returnValue === 'end') finishSession(workout.read(), false);
+  else { if (!pausedBeforeDialog) togglePause(); $('pauseBtn').focus(); }
+});
+$('pauseBtn').addEventListener('click', togglePause);
+$('btn-start-fight').addEventListener('click', startWorkout);
+$('btn-restart').addEventListener('click', () => { stopSounds(); showScreen('setup'); $('btn-start-fight').focus(); });
+$('muteBtn').addEventListener('click', () => {
+  settings.isMuted = !settings.isMuted;
+  if (settings.isMuted) {
+    stopSounds(); notice('audio', '');
+    if (audioCtx) audioCtx.suspend().catch(() => {});
+  } else prepareAudio();
+  saveSettings(); renderSettings();
+});
+for (const [id, delta] of [['btn-minus', -1], ['btn-plus', 1]]) $(id).addEventListener('click', () => { settings.targetRounds = BoxingTimer.clampRounds(settings.targetRounds + delta); saveSettings(); renderSettings(); });
+for (const button of document.querySelectorAll('[data-fighter]')) button.addEventListener('click', () => { settings.intensity = button.dataset.fighter; saveSettings(); renderSettings(); });
+$('fullscreenBtn').hidden = !document.fullscreenEnabled;
+$('fullscreenBtn').addEventListener('click', async () => {
+  try { if (document.fullscreenElement) await document.exitFullscreen(); else await document.documentElement.requestFullscreen(); } catch { notice('fullscreen', 'Full screen is unavailable. You can still train in this view.'); }
+});
+document.addEventListener('fullscreenchange', () => { $('fullscreenBtn').setAttribute('aria-label', document.fullscreenElement ? 'Exit full screen' : 'Enter full screen'); notice('fullscreen', ''); });
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && workout) { tick(); requestWakeLock(); }
+  else stopSounds();
+});
+document.addEventListener('pointerdown', () => { if (workout && !wakeLock) requestWakeLock(); });
+document.querySelector('.brand').addEventListener('click', event => { if (workout) { event.preventDefault(); $('stopBtn').click(); } });
+window.addEventListener('beforeunload', event => { if (workout) { event.preventDefault(); event.returnValue = ''; } });
+loadSettings(); renderSettings();
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => notice('offline', 'Offline setup failed. Keep this page open and connected for this session.'));

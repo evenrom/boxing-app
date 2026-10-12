@@ -1,106 +1,54 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-    <title>Boxing Pro Trainer</title>
-    
-    <link rel="manifest" href="manifest.json">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Boxing Pro">
-    <meta name="theme-color" content="#0b0b0b">
-    <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/evenrom/boxing-timer-assets/refs/heads/main/icon.png">
-    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/evenrom/boxing-timer-assets/refs/heads/main/icon.png">
-
-    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700&family=Teko:wght@500;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="style.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#111310">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Rounds">
+<meta name="description" content="Your corner. Five-minute boxing rounds with minute-by-minute combinations.">
+<title>ROUNDS — Your corner</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="assets/icon.png">
+<link rel="apple-touch-icon" href="assets/icon.png">
+<link rel="stylesheet" href="style.css">
+<script src="routines.js" defer></script><script src="timer.js" defer></script><script src="script.js" defer></script>
 </head>
-<body class="h-screen w-screen overflow-hidden select-none bg-[#0b0b0b] font-['Assistant'] text-white">
-
-<div class="h-full w-full max-w-[1200px] mx-auto flex flex-col p-4 bg-gradient-to-b from-[#181818] to-[#0e0e0e] relative">
-    
-    <div class="flex items-center justify-between pb-2 border-b border-[#222] shrink-0">
-        <button id="muteBtn" class="p-3 text-gray-400 hover:text-[var(--theme-accent)] transition-colors active:scale-95">
-            <span class="material-symbols-outlined text-[2.6rem]">volume_up</span>
-        </button>
-        <div class="font-['Teko'] text-3xl tracking-[4px] font-bold text-center flex-1 pr-12">BOXING COUNTDOWN</div>
-    </div>
-
-    <div id="setup-screen" class="flex flex-col flex-1 min-h-0 container-view">
-        <div class="flex flex-1 gap-6 min-h-0 items-center mt-4">
-            <div class="flex-1 flex flex-col gap-3 justify-center">
-                <div id="btn-tyson" class="diff-btn border border-[#333] p-4 rounded-xl cursor-pointer bg-white/5 transition-all" onclick="app.selectDiff('TYSON')">
-                    <div class="font-['Teko'] text-2xl tracking-wide text-gray-400">MIKE TYSON</div>
-                    <div class="text-xs text-gray-500">5 MIN • 30 SEC REST</div>
-                </div>
-                <div id="btn-mayweather" class="diff-btn border border-[#333] p-4 rounded-xl cursor-pointer bg-white/5 transition-all" onclick="app.selectDiff('MAYWEATHER')">
-                    <div class="font-['Teko'] text-2xl tracking-wide text-gray-400">FLOYD MAYWEATHER</div>
-                    <div class="text-xs text-gray-500">5 MIN • 30 SEC REST</div>
-                </div>
-                <div id="btn-ali" class="diff-btn border border-[#333] p-4 rounded-xl cursor-pointer bg-white/5 transition-all" onclick="app.selectDiff('ALI')">
-                    <div class="font-['Teko'] text-2xl tracking-wide text-gray-400">MUHAMMAD ALI</div>
-                    <div class="text-xs text-gray-500">5 MIN • 30 SEC REST</div>
-                </div>
-            </div>
-
-            <div class="flex-1 flex flex-col items-center justify-center border-l border-r border-[#222] h-4/5 px-4">
-                <div class="font-['Teko'] text-3xl text-[var(--theme-accent)] tracking-wider">ROUNDS</div>
-                <div class="flex items-center gap-6 my-4">
-                    <div id="btn-minus" class="w-14 h-14 rounded-full bg-[#222] border border-[#444] text-2xl flex items-center justify-center cursor-pointer active:bg-[var(--theme-accent)] active:text-black transition-colors">−</div>
-                    <span id="setupRoundCount" class="font-['Teko'] text-7xl w-24 text-center select-none">8</span>
-                    <div id="btn-plus" class="w-14 h-14 rounded-full bg-[#222] border border-[#444] text-2xl flex items-center justify-center cursor-pointer active:bg-[var(--theme-accent)] active:text-black transition-colors">+</div>
-                </div>
-                <div class="font-['Teko'] text-xl text-gray-500 tracking-wider">TOTAL TIME: <span id="totalTimePreview" class="text-white">--:--</span></div>
-            </div>
-        </div>
-
-        <div class="pt-4 shrink-0">
-            <button id="btn-start-fight" class="w-full py-3 border-2 border-[var(--theme-accent)] text-[var(--theme-accent)] hover:bg-[var(--theme-accent)] hover:text-black font-['Teko'] text-3xl rounded-full tracking-widest transition-all active:scale-[0.99]">START FIGHT</button>
-        </div>
-    </div>
-
-    <div id="timer-screen" class="hidden flex-col flex-1 min-h-0 container-view">
-        <div class="grid grid-cols-2 w-full h-full">
-            <div class="flex flex-col justify-center items-center h-full border-r border-[#222]">
-                <div id="mainTimer" class="font-['Teko'] text-[26vh] font-bold text-[var(--theme-accent)] tracking-tight leading-none">00:00</div>
-                <div class="font-['Teko'] text-4xl text-gray-400 tracking-wider mt-2">TOTAL: <span id="totalTimer">00:00</span></div>
-            </div>
-            <div class="flex flex-col justify-center h-full pl-8 gap-4">
-                <div id="statusText" class="font-['Teko'] text-4xl text-[var(--theme-accent)] tracking-widest uppercase">ROUND 1</div>
-                
-                <div class="bg-[#141414] p-4 rounded-xl shadow-lg flex-[2] min-h-0 flex flex-col justify-center">
-                    <div class="text-xs text-gray-500 tracking-widest uppercase mb-1">CURRENT COMBO</div>
-                    <div id="currentPattern" class="font-['Teko'] text-[9vh] text-white flex flex-col items-center justify-center gap-2 leading-none">GET READY</div>
-                </div>
-                
-                <div class="pl-2 flex-[1] min-h-0 flex flex-col justify-center">
-                    <div class="text-xs text-gray-500 tracking-widest uppercase mb-1">NEXT UP</div>
-                    <div id="nextPattern" class="font-['Teko'] text-[4vh] text-gray-500 flex gap-2 items-center">...</div>
-                </div>
-            </div>
-        </div>
-        <div class="flex gap-4 justify-center py-4 shrink-0 border-t border-[#222]">
-            <button id="pauseBtn" class="px-12 py-2 border-2 border-[var(--theme-accent)] text-[var(--theme-accent)] hover:bg-[var(--theme-accent)] hover:text-black font-['Teko'] text-2xl rounded-full min-width-[160px] transition-colors">PAUSE</button>
-            <button id="stopBtn" class="px-12 py-2 border-2 border-red-500 text-red-500 hover:bg-red-500 hover:text-white font-['Teko'] text-2xl rounded-full min-width-[160px] transition-colors">END</button>
-        </div>
-    </div>
-
-    <div id="finish-screen" class="hidden flex-col flex-1 items-center justify-center text-center container-view">
-        <h1 class="font-['Teko'] text-[14vh] text-[var(--theme-green)] tracking-widest leading-none m-0">VICTORY</h1>
-        <div id="finishLevelText" class="font-['Teko'] text-[4vh] text-white tracking-wide uppercase mb-4">COMPLETED</div>
-        <div class="bg-[#141414] border border-[#333] px-12 py-4 rounded-2xl mb-6">
-            <span class="text-xs text-gray-500 tracking-widest uppercase">ROUNDS Completed</span><br>
-            <span id="finishRoundsVal" class="font-['Teko'] text-[8vh] text-[var(--theme-accent)] leading-none">8</span>
-        </div>
-        <button id="btn-restart" class="px-24 py-3 border-2 border-[var(--theme-accent)] text-[var(--theme-accent)] hover:bg-[var(--theme-accent)] hover:text-black font-['Teko'] text-3xl rounded-full tracking-widest transition-all">DONE</button>
-    </div>
-
+<body>
+<div class="app-shell">
+<header class="topbar">
+<a class="brand" href="./" aria-label="Rounds home"><span class="brand-mark" aria-hidden="true">Ⅱ</span> ROUNDS<span class="brand-caption">YOUR CORNER.</span></a>
+<div class="toolbar"><span id="screenStatus" class="status-note">READY WHEN YOU ARE</span><button id="muteBtn" class="tool-button" aria-pressed="false">Sound on</button><button id="fullscreenBtn" class="tool-button" aria-label="Enter full screen">⛶ <span>Full screen</span></button></div>
+</header>
+<main id="setup-screen">
+<div class="intro"><div><p class="eyebrow">THE WORK STARTS HERE</p><h1>Find your rhythm.</h1></div><p class="intro-note">Three styles. One round at a time.<br>Your next session starts here.</p></div>
+<div class="setup-grid">
+<section class="styles-section" aria-labelledby="styleHeading">
+<div class="section-heading"><h2 id="styleHeading"><span>01</span> CHOOSE YOUR STYLE</h2><span>INSPIRED BY THE GREATS</span></div>
+<div class="fighter-list">
+<button class="fighter-card" data-fighter="TYSON" aria-pressed="true"><span class="fighter-number">01</span><span class="fighter-copy"><span class="fighter-tag">PRESSURE & POWER</span><strong>Mike Tyson</strong><span class="fighter-description">Close the distance. Work the body.</span></span><span class="selection-mark" aria-hidden="true">↗</span></button>
+<button class="fighter-card" data-fighter="MAYWEATHER" aria-pressed="false"><span class="fighter-number">02</span><span class="fighter-copy"><span class="fighter-tag">DEFENSE & PRECISION</span><strong>Floyd Mayweather</strong><span class="fighter-description">Stay composed. Make every counter count.</span></span><span class="selection-mark" aria-hidden="true">↗</span></button>
+<button class="fighter-card" data-fighter="ALI" aria-pressed="false"><span class="fighter-number">03</span><span class="fighter-copy"><span class="fighter-tag">FOOTWORK & SPEED</span><strong>Muhammad Ali</strong><span class="fighter-description">Keep moving. Find your opening.</span></span><span class="selection-mark" aria-hidden="true">↗</span></button>
+</div></section>
+<section class="session-card" aria-labelledby="sessionHeading"><h2 id="sessionHeading"><span>02</span> BUILD YOUR SESSION</h2>
+<div class="round-stepper"><button id="btn-minus" aria-label="Fewer rounds">−</button><div><output id="setupRoundCount">7</output><span>ROUNDS</span></div><button id="btn-plus" aria-label="More rounds">+</button></div>
+<div class="session-details"><div><span>Warm-up</span><strong>2:00</strong></div><div><span>Each round</span><strong>5:00</strong></div><div><span>Between rounds</span><strong>0:30</strong></div></div>
+<div class="session-total"><span>TOTAL SESSION</span><strong id="totalTimePreview">40:00</strong></div><button id="btn-start-fight" class="primary-button">Start training <span aria-hidden="true">→</span></button>
+</section></div>
+<footer class="setup-footer"><span><i></i> A NEW COMBINATION EVERY MINUTE</span><span>MINUTE BELL <b>·</b> 10-SECOND COUNTDOWN <b>·</b> OFFLINE READY</span></footer>
+<details class="guide"><summary>Combination key & session notes</summary><p>1 = jab · 2 = cross · 3 = left hook · 4 = right hook · 7 = uppercut · ▲ = slip / head movement · ◄ / ► = step left / right. Follow the Hebrew cue for each drill. These are style-inspired routines.</p><p>Each style has 7 rounds of combinations; rounds 8–20 repeat the sequence. Use HTTPS for screen wake lock and offline installation. Start Spotify first, then start training; audio mixing depends on your tablet and browser.</p></details>
+</main>
+<main id="timer-screen" hidden>
+<div class="workout-heading"><span id="workoutStyle" class="eyebrow">MIKE TYSON</span><span id="roundIndicator">WARM-UP</span></div>
+<div class="workout-grid">
+<section class="clock-panel" aria-label="Workout timer"><div class="clock-label"><span id="statusText">WARM-UP</span><span id="pauseLabel" hidden>PAUSED</span></div><div id="mainTimer" role="timer" aria-label="Time left in this phase">02:00</div><div class="phase-track"><div id="phaseProgress"></div></div><div class="clock-meta"><span>SESSION LEFT <strong id="totalTimer">40:00</strong></span><span id="completedIndicator">0 / 7 COMPLETE</span></div></section>
+<section class="drill-panel" aria-label="Current training instruction"><div class="drill-topline"><span id="drillLabel">BEFORE THE BELL</span><span id="minuteTimer"></span></div><div id="currentPattern"></div><p id="currentDescription" dir="auto"></p><div id="minuteSteps" class="minute-steps" aria-label="Round minute progress"></div><div class="next-drill"><span id="nextLabel">UP NEXT</span><strong id="nextPattern" dir="auto"></strong><p id="nextDescription" dir="auto"></p></div></section>
 </div>
-
-<script src="script.js"></script>
-</body>
-</html>
+<footer class="workout-footer"><p id="roundFocus" dir="auto"></p><div><button id="stopBtn" class="secondary-button">End session</button><button id="pauseBtn" class="primary-button">Ⅱ Pause</button></div></footer>
+</main>
+<main id="finish-screen" class="finish-screen" hidden><p class="eyebrow">BACK IN YOUR CORNER</p><h1 id="finishTitle">Session complete.</h1><p id="finishLevelText"></p><div class="finish-stats"><div><strong id="finishRoundsVal">7 / 7</strong><span>ROUNDS COMPLETED</span></div><div><strong id="finishDuration">40:00</strong><span>TIME TRAINED</span></div></div><button id="btn-restart" class="primary-button">Back to training <span aria-hidden="true">↗</span></button></main>
+<p id="notice" class="notice" role="status" hidden></p>
+</div>
+<dialog id="endDialog"><form method="dialog"><p class="eyebrow">TAKE A BREATHER</p><h2>End this session?</h2><p>Your completed rounds will appear in the summary.</p><div class="dialog-actions"><button value="continue" class="secondary-button">Keep training</button><button value="end" class="primary-button">End session</button></div></form></dialog>
+</body></html>
