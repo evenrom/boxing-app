@@ -32,7 +32,7 @@ const output = process.env.BOXING_SCREENSHOTS || path.join(__dirname, '..', '.ar
     await page.evaluate(() => { workout.offset = 0; workout.startedAt = Date.now(); previous = workout.read(); });
     await page.clock.runFor(120100);
     assert.equal(await page.locator('#statusText').textContent(), 'ROUND 01');
-    assert.equal(await page.locator('#currentDescription').textContent(), "ג'אב מהיר (Flicker)");
+    assert.equal(await page.locator('#currentDescription').textContent(), "ג'אב רגוע; חזרה להגנה אחרי כל מכה");
     await page.getByRole('button', { name: 'Pause', exact: false }).click();
     const frozen = await page.locator('#mainTimer').textContent();
     await page.clock.fastForward(20000);
@@ -40,7 +40,7 @@ const output = process.env.BOXING_SCREENSHOTS || path.join(__dirname, '..', '.ar
     await page.getByRole('button', { name: 'Resume', exact: false }).click();
     await page.clock.runFor(60000);
     assert.equal(await page.locator('#drillLabel').textContent(), 'MINUTE 2 OF 5');
-    // Longest combinations must fit, including all tablet landscape sizes.
+    // Check the clock and controls at all supported landscape sizes.
     await page.evaluate(() => { workout.offset = 780000; workout.startedAt = Date.now(); previous = workout.read(); tick(); });
     for (const [width, height] of [[1280,800], [1024,768], [1180,820], [960,600]]) {
       await page.setViewportSize({ width, height });
@@ -52,23 +52,42 @@ const output = process.env.BOXING_SCREENSHOTS || path.join(__dirname, '..', '.ar
       assert.ok(geometry.scrollWidth <= width, JSON.stringify(geometry));
       for (const item of geometry.nodes) assert.ok(item.right <= width && item.bottom <= height && !item.overflow, JSON.stringify({width,height,item}));
     }
-    const drillOverflows = await page.evaluate(() => {
-      const failures = [], original = settings.intensity;
-      for (const fighter of Object.keys(FIGHTER_ROUTINES)) {
-        settings.intensity = fighter;
-        for (let index = 0; index < 35; index++) {
-          renderKey = '';
-          renderWorkout(BoxingTimer.snapshot(120 + Math.floor(index / 5) * 330 + index % 5 * 60, 7));
-          for (const id of ['currentPattern', 'currentDescription', 'nextPattern', 'nextDescription', 'pauseBtn']) {
-            const element = document.getElementById(id), rect = element.getBoundingClientRect();
-            if (element.scrollWidth > element.clientWidth + 2 || rect.right > innerWidth || rect.bottom > innerHeight) failures.push({ fighter, index, id });
+    for (const [width, height] of [[1280,800], [1024,768], [1180,820], [960,600]]) {
+      await page.setViewportSize({ width, height });
+      const drillOverflows = await page.evaluate(() => {
+        const failures = [], original = settings.intensity;
+        for (const fighter of Object.keys(FIGHTER_ROUTINES)) {
+          settings.intensity = fighter;
+          for (let index = 0; index < 35; index++) {
+            renderKey = '';
+            renderWorkout(BoxingTimer.snapshot(120 + Math.floor(index / 5) * 330 + index % 5 * 60, 7));
+            for (const id of ['mainTimer', 'currentPattern', 'currentDescription', 'nextPattern', 'nextDescription', 'pauseBtn']) {
+              const element = document.getElementById(id), rect = element.getBoundingClientRect();
+              if (element.scrollWidth > element.clientWidth + 2 || rect.left < 0 || rect.top < 0 || rect.right > innerWidth || rect.bottom > innerHeight) failures.push({ fighter, index, id });
+            }
           }
         }
-      }
-      settings.intensity = original; renderKey = ''; renderWorkout(workout.read());
-      return failures;
+        settings.intensity = original; renderKey = ''; renderWorkout(workout.read());
+        return failures;
+      });
+      assert.deepEqual(drillOverflows, [], `All drills at ${width}×${height}`);
+    }
+    // Recovery preview and the actual next round must use the same advanced stage.
+    const extendedPreview = await page.evaluate(() => {
+      renderKey = '';
+      renderWorkout(BoxingTimer.snapshot(120 + 6 * 330 + 300, 8));
+      const preview = document.getElementById('nextPattern').textContent;
+      const focus = document.getElementById('roundFocus').textContent;
+      renderKey = '';
+      renderWorkout(BoxingTimer.snapshot(120 + 7 * 330, 8));
+      const result = { preview, current: document.querySelector('.combo-sequence').getAttribute('aria-label'), focus, currentFocus: document.getElementById('roundFocus').textContent,
+        expected: getRoutineDrill(FIGHTER_ROUTINES[settings.intensity], 8).combo };
+      renderKey = ''; renderWorkout(workout.read());
+      return result;
     });
-    assert.deepEqual(drillOverflows, []);
+    assert.equal(extendedPreview.preview, extendedPreview.expected);
+    assert.equal(extendedPreview.current, extendedPreview.expected);
+    assert.equal(extendedPreview.focus, extendedPreview.currentFocus);
     await page.setViewportSize({width:1280,height:800});
     await page.screenshot({ path: path.join(output, 'workout.png') });
     await page.evaluate(() => { workout.offset = 420000; workout.startedAt = Date.now(); previous = workout.read(); tick(); });

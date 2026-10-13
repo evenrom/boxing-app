@@ -544,7 +544,7 @@ h2>span {
   background: #232b1b;
   padding: 12px 0;
   border-radius: 5px;
-  font-size: clamp(28px,12cqw,100px);
+  font-size: clamp(32.2px,13.8cqw,115px);
   min-width: 0;
 }
 
@@ -596,7 +596,7 @@ h2>span {
 }
 
 .next-drill strong {
-  font-size: clamp(22px,3vw,40px);
+  font-size: clamp(25.3px,3.45vw,46px);
   font-variant-numeric: tabular-nums;
   letter-spacing: 1px;
   display: block;

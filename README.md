@@ -10,12 +10,24 @@ For a tablet, host these static files over **HTTPS** (for example GitHub Pages),
 
 ## Workout behavior
 
-- Choose Tyson, Mayweather, or Ali; original Hebrew cues and 35 drills per style are preserved.
+- Choose Tyson, Mayweather, or Ali; each has 35 different combinations with Hebrew coaching cues, in a fixed order.
 - 2-minute warm-up → 5-minute rounds → 30-second rests between rounds. No rest after the final round.
-- Default: 7 rounds / 40 minutes. Choose 1–20 rounds; rounds beyond seven repeat the routine.
+- Default: 7 rounds / 40 minutes. Choose 1–20 rounds. The seven-stage progression starts with calm straight punches, adds movement and short combinations, then builds to integrated five- and six-punch chains. Shorter sessions stop at the selected round. Rounds 8–20 alternate stages 6 and 7 to practice advanced work, rather than restarting the opening drills.
 - Each work minute advances the combination and rings a short bell. Warm-up also has a minute bell. Every phase has ten individual countdown beeps in its final ten seconds; the clock changes color too.
 - Pause freezes the clock and stops all cues. Ending asks for confirmation and counts only fully completed rounds. Opening that confirmation pauses the timer; cancel restores its prior pause state.
 - Only style, round count, and mute preference are saved locally. No workout history is collected.
+
+## Reflex-bag programs
+
+The programs are adapted to a small reflex ball on a spring stand, with controlled contact and small steps. There are no body-shot targets. Each minute repeats its displayed combination deliberately; the combination changes at the next minute. The same exact combination is not duplicated within a style's first seven rounds.
+
+- **Tyson:** compact hooks, head movement, angle changes, and controlled close-range pressure. One optional uppercut drill in round 5, minute 3: `1-2-5-2`. Throw the uppercut in the air, or substitute a left hook (`3`) to stay on the ball. It does not recur in extra rounds.
+- **Mayweather:** precise straights, simulated pulls/slips before counters, and lateral exits. No uppercuts.
+- **Ali:** relaxed jabs, straight-punch flurries, rhythm changes, and footwork. No uppercuts.
+
+Punch key: 1 jab, 2 cross, 3 left hook, 4 right hook, 5 left uppercut, 6 right uppercut. The old ambiguous `7` has been removed. Current and next exercise numbers are 15% larger.
+
+These are custom style-inspired drills, not the fighters' actual training programs. Design references: [IBA coaching manual](https://www.iba.sport/documents/iba-coach-manual/), [peekaboo fundamentals](https://evolve-mma.com/blog/beginners-guide-to-the-peekaboo-style/), and [Ali's circle and jab](https://modernmartialartist.com/muhammad-ali-footwork-jab-circle-technique-breakdown/).
 
 ## Screen and audio
 
@@ -32,7 +44,7 @@ All required styles, scripts, icons, and bell audio are local and precached. No 
 ## Code and verification
 
 - `timer.js`: deterministic phase snapshots, cue boundaries, pause/resume clock; tested with Node's built-in runner.
-- `routines.js`: original style programs.
+- `routines.js`: progressive style programs and consistent drill selection for work/recovery previews and extra rounds.
 - `script.js`: UI, local preferences, Web Audio, wake lock.
 - `style.css`: landscape-first layout, responsive fallback, local system fonts.
 - `tools/check-browser.cjs`: optional Playwright integration checks (requires Playwright and Microsoft Edge; start the local server first). Run `node tools/check-browser.cjs` with Playwright available to Node. Screenshots default to ignored `.artifacts/`, or set `BOXING_SCREENSHOTS`.

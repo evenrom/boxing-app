@@ -168,28 +168,28 @@ function renderWorkout(state) {
   $('minuteSteps').replaceChildren();
   $('nextLabel').textContent = 'UP NEXT';
   if (state.phase === 'work') {
-    const drill = routine.plan[state.routineIndex % routine.plan.length];
+    const drill = getRoutineDrill(routine, state.round, state.minute);
     renderCombo(drill.combo); $('currentDescription').textContent = drill.desc;
     $('drillLabel').textContent = `MINUTE ${state.minute + 1} OF 5`;
     for (let i = 0; i < 5; i++) { const step = document.createElement('span'); step.className = i <= state.minute ? 'active' : ''; $('minuteSteps').append(step); }
     $('minuteSteps').setAttribute('aria-label', `Minute ${state.minute + 1} of 5`);
-    $('roundFocus').textContent = routine.roundFocus[(state.round - 1) % routine.roundFocus.length];
+    $('roundFocus').textContent = routine.roundFocus[getRoutineRoundIndex(state.round)];
     if (state.minute === 4) {
       $('nextPattern').textContent = state.round === state.rounds ? 'Session complete' : '30-second recovery';
       $('nextDescription').textContent = state.round === state.rounds ? 'Finish strong. This is your final minute.' : 'Breathe. Reset. Get ready for the next round.';
     } else {
-      const next = routine.plan[(state.routineIndex + 1) % routine.plan.length];
+      const next = getRoutineDrill(routine, state.round, state.minute + 1);
       $('nextPattern').textContent = next.combo; $('nextPattern').dir = 'ltr'; $('nextDescription').textContent = next.desc;
     }
   } else {
     const nextRound = state.phase === 'rest' ? state.round + 1 : 1;
-    const next = routine.plan[((nextRound - 1) * 5) % routine.plan.length];
+    const next = getRoutineDrill(routine, nextRound);
     $('drillLabel').textContent = state.phase === 'rest' ? 'EARN YOUR RECOVERY' : 'BEFORE THE BELL';
     $('currentPattern').textContent = state.phase === 'rest' ? 'Breathe.' : 'Get loose.';
     $('currentDescription').textContent = state.phase === 'rest' ? 'Relax your shoulders. Control your breathing.' : 'Light footwork. Loose shoulders. Find your rhythm.';
     $('nextLabel').textContent = `UP NEXT · ROUND ${nextRound}`;
     $('nextPattern').textContent = next.combo; $('nextPattern').dir = 'ltr'; $('nextDescription').textContent = next.desc;
-    $('roundFocus').textContent = routine.roundFocus[(nextRound - 1) % routine.roundFocus.length];
+    $('roundFocus').textContent = routine.roundFocus[getRoutineRoundIndex(nextRound)];
   }
 }
 function togglePause() {

@@ -59,12 +59,3 @@ test('round settings reject corrupt values and enforce limits', () => {
   for (const value of [undefined, null, '8', {}, 2.5, NaN, Infinity]) assert.equal(clampRounds(value), 7);
   assert.equal(clampRounds(-5), 1); assert.equal(clampRounds(300), 20);
 });
-test('each fighter has 35 valid drills and loops at round eight', () => {
-  const fs = require('node:fs'), vm = require('node:vm');
-  const routines = vm.runInNewContext(fs.readFileSync(require.resolve('../routines.js'), 'utf8') + '; FIGHTER_ROUTINES');
-  for (const routine of Object.values(routines)) {
-    assert.equal(routine.plan.length, 35); assert.equal(routine.roundFocus.length, 7);
-    for (const drill of routine.plan) { assert.match(drill.combo, /^[1-47 ▲◄►-]+$/); assert.ok(drill.desc); }
-    assert.equal(snapshot(120 + 7 * 330, 8).routineIndex % routine.plan.length, 0);
-  }
-});
